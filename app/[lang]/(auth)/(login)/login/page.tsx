@@ -4,7 +4,6 @@ import LogInForm from "./login-form";
 import auth3Light from "@/public/images/auth/auth3-light.png"
 import auth3Dark from "@/public/images/auth/auth3-dark.png"
 const LoginPage = () => {
-
   return (
     <div className="loginwrapper  flex justify-center items-center relative overflow-hidden">
       <Image

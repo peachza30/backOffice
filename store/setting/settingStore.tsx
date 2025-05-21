@@ -2,6 +2,7 @@ import * as setting from "@/services/setting/setting.service";
 import { create } from "zustand";
 
 export const useSettingStore = create<SettingStore>((set, get) => ({
+  roleSelected: 0,
   settings: [],
   setting: null,
   roles: [],
@@ -14,11 +15,11 @@ export const useSettingStore = create<SettingStore>((set, get) => ({
   setPage: page => set({ page }),
   setSort: sort => set({ sort }),
 
+  // TODO: Roles Store
   getRolesSetting: async (scopeId: number) => {
     set({ loading: true, error: null });
     try {
       const scopes = await setting.getRolesSetting(scopeId);
-      // console.log("getRolesSetting: ", scopes.data.roles);
       set({ roles: scopes.data.roles, loading: false });
     } catch (err) {
       if (err instanceof Error) {
@@ -28,6 +29,11 @@ export const useSettingStore = create<SettingStore>((set, get) => ({
       }
     }
   },
+
+  setRolesSelected: async (roleId: number) => {
+    set({ roleSelected: roleId });
+  },
+
   // TODO: Users Store
   getUsersSetting: async () => {
     set({ loading: true, error: null });
@@ -85,6 +91,7 @@ export const useSettingStore = create<SettingStore>((set, get) => ({
       }
     }
   },
+
   // TODO: Partners Store
   getPartnersSetting: async () => {
     set({ loading: true, error: null });
@@ -115,12 +122,13 @@ export const useSettingStore = create<SettingStore>((set, get) => ({
       }
     }
   },
-  editPartnersSetting: async (data: Settings, id: number) => {
+  editPartnersSetting: async (data: { role_id: number }, id: number) => {
+    console.log("data", data);
     set({ loading: true, error: null });
     try {
       await setting.updatePartnersSetting(data, id);
-      // const settings = await setting.getPartnersSetting();
-      // set({ settings, loading: false });
+      const settings = await setting.getPartnersSetting();
+      set({ settings: settings, loading: false });
     } catch (err) {
       if (err instanceof Error) {
         set({ error: err.message, loading: false });

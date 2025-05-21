@@ -20,7 +20,7 @@ export default function EditPartnerModal({
   onOpenChange: (open: boolean) => void;
   partner: any; // Ideally type this
 }) {
-  const { roles, loading, getRolesSetting, editPartnersSetting } = useSettingStore();
+  const { roles, roleSelected, loading, getRolesSetting, editPartnersSetting } = useSettingStore();
 
   const [form, setForm] = useState({
     name: "",
@@ -51,16 +51,11 @@ export default function EditPartnerModal({
     setForm(prev => ({ ...prev, [name]: value }));
   };
   const handleSubmit = async () => {
-    const updatedPartner = {
-      ...partner,
-      partner_name: form.name,
-      partner_email: form.email,
-      password_hash: form.password,
-      role_id: form.role_id,
-    };
-
+    const roleUpdate: any = {
+      role_id: roleSelected,
+    }
     try {
-      await editPartnersSetting(updatedPartner, partner.id);
+      await editPartnersSetting(roleUpdate, partner.partner_id);
       onOpenChange(false);
     } catch (err) {
       console.error("Error updating partner:", err);
@@ -72,10 +67,11 @@ export default function EditPartnerModal({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="flex flex-col gap-4">
           <DialogTitle>Edit Partner</DialogTitle>
-          <Input name="name" value={form.name} onChange={handleInputChange} placeholder="Name" />
-          <Input name="password" value={form.password} onChange={handleInputChange} placeholder="password" />
-          <Input name="email" value={form.email} onChange={handleInputChange} placeholder="Email" />
-          <ReactSelectOption value={form.role_id} />
+          {/* <Input name="name" value={form.name} onChange={handleInputChange} placeholder="Name" /> */}
+          {/* <Input name="password" value={form.password} onChange={handleInputChange} placeholder="password" /> */}
+          {/* <Input name="email" value={form.email} onChange={handleInputChange} placeholder="Email" /> */}
+          <Input name="email" value={form.name} onChange={handleInputChange} placeholder="Email" readOnly />
+          <ReactSelectOption selected={{ value: form.role_id }} />
           <Button onClick={handleSubmit}>Save</Button>
         </DialogContent>
       </Dialog>

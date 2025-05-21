@@ -21,7 +21,6 @@ export default function SettingPartnersTable() {
         <div className="flex justify-end">
           <CreatePartnerModal open={openCreateModal} onOpenChange={setOpenCreateModal} onCreate={handleCreatePartner} />
         </div>
-
         <CardDescription>Make changes to your user here. Click save when you're done.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-2">

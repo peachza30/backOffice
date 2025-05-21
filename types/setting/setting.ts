@@ -1,12 +1,10 @@
-import { string } from "zod";
-
 interface Role {
-  role_id: number,
-  role_name: string,
-  role_status: string,
-  created_at: Date | null;
-  updated_at: Date | null;
-  deleted_at: Date | null;
+  role_id: number[],
+  // role_name: string,
+  // role_status: string,
+  // created_at?: Date | null;
+  // updated_at?: Date | null;
+  // deleted_at?: Date | null;
 }
 interface Scope {
   scope_id: number,
@@ -63,6 +61,7 @@ interface Settings {
 }
 
 interface SettingStore {
+  roleSelected: number;
   settings: Settings[];
   setting: Settings | null;
   roles: Role[];
@@ -75,6 +74,7 @@ interface SettingStore {
   sort: string;
   setSort: (sort: string) => void;
 
+  setRolesSelected: (roleId: number) => Promise<void>;
   getRolesSetting: (scopeId: number) => Promise<void>;
   getUsersSetting: () => Promise<void>;
   createUsersSetting: (data: Settings) => Promise<void>;
@@ -82,7 +82,7 @@ interface SettingStore {
   deleteUsersSetting: (id: number) => Promise<void>;
   getPartnersSetting: () => Promise<void>;
   createPartnersSetting: (data: Partner) => Promise<void>;
-  editPartnersSetting: (data: Settings, id: number) => Promise<void>;
+  editPartnersSetting: (data: { role_id: number }, id: number) => Promise<void>
   deletePartnersSetting: (id: number) => Promise<void>;
   getMembersSetting: () => Promise<void>;
   createMembersSetting: (data: Settings) => Promise<void>;
@@ -91,7 +91,7 @@ interface SettingStore {
 };
 
 interface OptionType {
-  value: string;
+  value: number;
   label: string;
   isFixed?: boolean;
   icon?: string;

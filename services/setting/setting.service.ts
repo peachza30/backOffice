@@ -10,7 +10,7 @@ export const createUsersSetting = async (data: Settings) => {
   const response = await httpClient.post('/users', data);
   return response.data;
 };
-export const updateUsersSetting = async (data: Settings, id: number ) => {
+export const updateUsersSetting = async (data: Settings, id: number) => {
   const response = await httpClient.patch(`/users/${id}`, data);
   return response.data;
 };
@@ -47,10 +47,12 @@ export const createPartnersSetting = async (data: Partner) => {
   console.log("response api: ", response);
   return response.data;
 };
-export const updatePartnersSetting = async (data: Settings, id: number ) => {
+export const updatePartnersSetting = async (data: { role_id: number }, id: number) => {
+  console.log("data", data);
   const response = await httpClient.patch(`/partners/${id}`, data);
   return response.data;
 };
+
 export const deletePartnersSetting = async (id: number) => {
   const { data: response } = await httpClient.delete(`/partners/${id}`);
   return response.data;
@@ -64,7 +66,7 @@ export const createMembersSetting = async (data: Settings) => {
   const response = await httpClient.post('/members', data);
   return response.data;
 };
-export const updateMembersSetting = async (data: Settings, id: number ) => {
+export const updateMembersSetting = async (data: Settings, id: number) => {
   const response = await httpClient.patch(`/members/${id}`, data);
   return response.data;
 };
