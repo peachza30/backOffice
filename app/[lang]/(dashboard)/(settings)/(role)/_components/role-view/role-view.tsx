@@ -135,6 +135,7 @@ const RoleView = ({ mode, roleId }: { mode: string; roleId?: number }) => {
                 toggleAllPermissions(category, item.id);
               }}
               className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 border-gray-300"
+              disabled={true}
             />
           </div>
 
@@ -147,6 +148,7 @@ const RoleView = ({ mode, roleId }: { mode: string; roleId?: number }) => {
                 togglePermission(category, item.id, "can_read");
               }}
               className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 border-gray-300"
+              disabled={true}
             />
           </div>
 
@@ -158,6 +160,7 @@ const RoleView = ({ mode, roleId }: { mode: string; roleId?: number }) => {
                 togglePermission(category, item.id, "can_create");
               }}
               className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 border-gray-300"
+              disabled={true}
             />
           </div>
 
@@ -169,6 +172,7 @@ const RoleView = ({ mode, roleId }: { mode: string; roleId?: number }) => {
                 togglePermission(category, item.id, "can_update");
               }}
               className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 border-gray-300"
+              disabled={true}
             />
           </div>
 
@@ -180,6 +184,7 @@ const RoleView = ({ mode, roleId }: { mode: string; roleId?: number }) => {
                 togglePermission(category, item.id, "can_delete");
               }}
               className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 border-gray-300"
+              disabled={true}
             />
           </div>
         </div>
@@ -235,14 +240,14 @@ const RoleView = ({ mode, roleId }: { mode: string; roleId?: number }) => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start py-4 border-b border-gray-100">
               <Label className="text-sm font-medium text-gray-600 uppercase tracking-wide">ROLE DESCRIPTION</Label>
               <div className="md:col-span-2">
-                <span className="text-gray-900">{formData.description || ""}</span>
+                <span className="text-gray-900">{formData.description || "-"}</span>
               </div>
             </div>
             {/* ROLE Description */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start py-4 border-b border-gray-100">
               <Label className="text-sm font-medium text-gray-600 uppercase tracking-wide">SCOPE</Label>
               <div className="md:col-span-2">
-                <span className="text-gray-900">{roleId && formData.scope_id != null ? formData.scope_id.toString() : undefined}</span>
+                <span className="text-gray-900">{roleId && formData.scope_id === 1 ? "user" : formData.scope_id === 2 ? "partner" : formData.scope_id?.toString()}</span>
               </div>
             </div>
 
@@ -260,7 +265,7 @@ const RoleView = ({ mode, roleId }: { mode: string; roleId?: number }) => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center py-4 border-b border-gray-100">
               <Label className="text-sm font-medium text-gray-600 uppercase tracking-wide">LAST MODIFIED</Label>
               <div className="md:col-span-2">
-                <span className="text-gray-900">{lastModified}</span>
+                <span className="text-gray-900">{lastModified || "-"}</span>
               </div>
             </div>
 
@@ -268,17 +273,17 @@ const RoleView = ({ mode, roleId }: { mode: string; roleId?: number }) => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center py-4 border-b border-gray-100">
               <Label className="text-sm font-medium text-gray-600 uppercase tracking-wide">MODIFIED BY</Label>
               <div className="md:col-span-2">
-                <span className="text-gray-900">{modifiedBy}</span>
+                <span className="text-gray-900">{modifiedBy || "-"}</span>
               </div>
             </div>
           </div>
         </CardContent>
       </div>
       <Card className="shadow-sm border border-gray-200 bg-white">
-        {/* <CardHeader className="pb-4 border-b border-gray-100"> */}
-        {/* <CardTitle className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Set Permission</CardTitle>
-          <p className="text-sm text-gray-500 mt-1">Configure permissions for services and menu access</p> */}
-        {/* </CardHeader> */}
+        {/* <CardHeader className="pb-4 border-b border-gray-100">
+          <CardTitle className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Set Permission</CardTitle>
+          <p className="text-sm text-gray-500 mt-1">Configure permissions for services and menu access</p>
+        </CardHeader> */}
         <CardContent className="p-0">
           <div className="bg-blue-50 border-b border-gray-200">
             <div className="grid grid-cols-6 gap-4 py-3 px-4">

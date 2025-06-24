@@ -70,9 +70,9 @@ const RoleForm = ({ mode, roleId }: { mode: string; roleId?: number }) => {
     }
   };
 
-  const handleCancel = () => {
+  const handleBack = () => {
     resetForm();
-    router.push("/roles");
+    router.push("/roles-list");
   };
 
   // Helper function to check if item has any permission
@@ -192,11 +192,8 @@ const RoleForm = ({ mode, roleId }: { mode: string; roleId?: number }) => {
 
   return (
     <>
-      <Card className="flex flex-col h-full">
-        <CardHeader className="pb-4 border-b border-gray-100">
-          <CardTitle className="text-xs font-semibold text-gray-600 uppercase tracking-wider">{roleId ? "Edit Role Details" : "Create New Role"}</CardTitle>
-        </CardHeader>
-        <CardContent className="pt-6">
+      <div className="flex flex-col h-full">
+        <CardContent className="pt-1">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label htmlFor="role-name" className="text-xs font-medium text-gray-600 uppercase tracking-wider">
@@ -239,44 +236,15 @@ const RoleForm = ({ mode, roleId }: { mode: string; roleId?: number }) => {
               </div>
             </div>
           </div>
-
-          {/* Show role metadata if available in edit mode */}
-          {roleId && role && (
-            <div className="mt-6 pt-6 border-t border-gray-100">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                <div>
-                  <span className="text-gray-500">Role ID:</span>
-                  <span className="ml-2 font-medium">{role.role_id}</span>
-                </div>
-                <div>
-                  <span className="text-gray-500">Created:</span>
-                  <span className="ml-2 font-medium">{new Date(role.created_at).toLocaleDateString()}</span>
-                </div>
-                <div>
-                  <span className="text-gray-500">Updated:</span>
-                  <span className="ml-2 font-medium">{new Date(role.updated_at).toLocaleDateString()}</span>
-                </div>
-                <div>
-                  <span className="text-gray-500">Status:</span>
-                  <span className="ml-2">
-                    <Badge color={role.status === "A" ? "success" : "destructive"} variant="soft" className={role.status === "A" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-700"}>
-                      {role.status === "A" ? "Active" : "Inactive"}
-                    </Badge>
-                  </span>
-                </div>
-              </div>
-            </div>
-          )}
         </CardContent>
-      </Card>
-
+      </div>
       <Card className="shadow-sm border border-gray-200 bg-white">
-        <CardHeader className="pb-4 border-b border-gray-100">
+        {/* <CardHeader className="pb-4 border-b border-gray-100">
           <CardTitle className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Set Permission</CardTitle>
           <p className="text-sm text-gray-500 mt-1">Configure permissions for services and menu access</p>
-        </CardHeader>
+        </CardHeader> */}
         <CardContent className="p-0">
-          <div className="bg-gray-50 border-b border-gray-200">
+          <div className="bg-blue-50 border-b border-gray-200">
             <div className="grid grid-cols-6 gap-4 py-3 px-4">
               <div className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Role Permission</div>
               <div className="text-xs font-semibold text-gray-600 text-center uppercase tracking-wider">All</div>
@@ -292,24 +260,14 @@ const RoleForm = ({ mode, roleId }: { mode: string; roleId?: number }) => {
             {permissionItems.services.length > 0 && (
               <>
                 <div className="bg-gray-50/60 px-4 py-2 border-b border-gray-100 flex items-center justify-between">
+                  <div className="flex items-center">
                   <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Services ({permissionItems.services.length})</h3>
-                  <button
-                    onClick={() => setShowServices(!showServices)}
-                    className="p-0.5 hover:bg-gray-200 rounded transition-colors"
-                    type="button"
-                  >
-                    {showServices ? (
-                      <ChevronDown className="h-4 w-4 text-gray-500" />
-                    ) : (
-                      <ChevronRight className="h-4 w-4 text-gray-500" />
-                    )}
+                    <button onClick={() => setShowServices(!showServices)} className="ml-2 p-0.5 rounded transition-colors" type="button">
+                      {showServices ? <ChevronDown className="h-4 w-4 text-gray-500" /> : <ChevronRight className="h-4 w-4 text-gray-500" />}
                   </button>
                 </div>
-                {showServices && (
-                  <div className="divide-y divide-gray-100">
-                    {permissionItems.services.map(item => renderPermissionItem(item, "services"))}
                   </div>
-                )}
+                {showServices && <div className="divide-y divide-gray-100">{permissionItems.services.map(item => renderPermissionItem(item, "services"))}</div>}
               </>
             )}
 
@@ -317,24 +275,14 @@ const RoleForm = ({ mode, roleId }: { mode: string; roleId?: number }) => {
             {permissionItems.menus.length > 0 && (
               <>
                 <div className="bg-gray-50/60 px-4 py-2 border-y border-gray-100 mt-4 flex items-center justify-between">
+                  <div className="flex items-center">
                   <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Menu ({permissionItems.menus.length})</h3>
-                  <button
-                    onClick={() => setShowMenus(!showMenus)}
-                    className="p-0.5 hover:bg-gray-200 rounded transition-colors"
-                    type="button"
-                  >
-                    {showMenus ? (
-                      <ChevronDown className="h-4 w-4 text-gray-500" />
-                    ) : (
-                      <ChevronRight className="h-4 w-4 text-gray-500" />
-                    )}
+                    <button onClick={() => setShowMenus(!showMenus)} className="ml-2 p-0.5  hover:bg-gray-200 rounded transition-colors" type="button">
+                      {showMenus ? <ChevronDown className="h-4 w-4 text-gray-500" /> : <ChevronRight className="h-4 w-4 text-gray-500" />}
                   </button>
                 </div>
-                {showMenus && (
-                  <div className="divide-y divide-gray-100">
-                    {permissionItems.menus.map(item => renderPermissionItem(item, "menus"))}
                   </div>
-                )}
+                {showMenus && <div className="divide-y divide-gray-100">{permissionItems.menus.map(item => renderPermissionItem(item, "menus"))}</div>}
               </>
             )}
 
@@ -350,7 +298,7 @@ const RoleForm = ({ mode, roleId }: { mode: string; roleId?: number }) => {
       </Card>
 
       <div className="mt-6 flex gap-3">
-        <Button onClick={handleSubmit} disabled={loading} className="bg-blue-600 hover:bg-blue-700 text-white px-6">
+        <Button onClick={handleSubmit} color="primary" disabled={loading} className="px-6">
           {loading ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin mr-2" />
@@ -362,7 +310,7 @@ const RoleForm = ({ mode, roleId }: { mode: string; roleId?: number }) => {
             "Create"
           )}
         </Button>
-        <Button variant="outline" onClick={handleCancel} disabled={loading} className="border-gray-300 text-gray-700 hover:bg-gray-50 px-6">
+        <Button variant="outline" color="destructive" onClick={handleBack} disabled={loading} className="">
           Cancel
         </Button>
       </div>
