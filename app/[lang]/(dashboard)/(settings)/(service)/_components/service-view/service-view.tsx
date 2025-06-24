@@ -41,7 +41,7 @@ const ServiceView = () => {
       };
 
       fetchUserData();
-      // Added dependencies
+
       const updatedAt = service.updated_at;
       const userName = user ? `${user.first_name}.${user.last_name.slice(0, 2)}` : "Unknown User";
 
@@ -52,10 +52,10 @@ const ServiceView = () => {
       setDescription(service.service_description || "");
       setShow(service.status === "A");
       setStatus(service.status);
-      setLastModified(userName || "");
-      setModifiedBy(new Intl.DateTimeFormat("th-TH", { year: "numeric", month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false }).format(new Date(updatedAt)));
+      setLastModified(new Intl.DateTimeFormat("th-TH", { year: "numeric", month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false }).format(new Date(updatedAt)));
+      setModifiedBy(userName || "");
     }
-  }, [service]);
+  }, [service, user]);
   useEffect(() => {
     if (show) {
       setStatus("A");
