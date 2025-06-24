@@ -1,5 +1,4 @@
 "use client";
-import { Inter } from "next/font/google";
 import { useThemeStore } from "@/store";
 import { ThemeProvider } from "next-themes";
 import { cn } from "@/lib/utils";
@@ -8,7 +7,8 @@ import { Toaster } from "react-hot-toast";
 import { SonnToaster } from "@/components/ui/sonner";
 import { usePathname } from "next/navigation";
 
-const inter = Inter({ subsets: ["latin"] });
+// Use a generic sans-serif font to avoid network font downloads during build
+const inter = { className: "font-sans" } as const;
 const Providers = ({ children }: { children: React.ReactNode }) => {
   const { theme, radius } = useThemeStore();
   const location = usePathname();
