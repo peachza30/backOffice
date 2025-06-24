@@ -21,6 +21,8 @@ const RoleView = ({ mode, roleId }: { mode: string; roleId?: number }) => {
   const router = useRouter();
   const [lastModified, setLastModified] = useState("");
   const [modifiedBy, setModifiedBy] = useState("");
+  const [showServices, setShowServices] = useState(true);
+  const [showMenus, setShowMenus] = useState(true);
 
   useEffect(() => {
     if (formData) {
@@ -293,20 +295,50 @@ const RoleView = ({ mode, roleId }: { mode: string; roleId?: number }) => {
             {/* Services Section */}
             {permissionItems.services.length > 0 && (
               <>
-                <div className="bg-gray-50/60 px-4 py-2 border-b border-gray-100">
+                <div className="bg-gray-50/60 px-4 py-2 border-b border-gray-100 flex items-center justify-between">
                   <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Services ({permissionItems.services.length})</h3>
+                  <button
+                    onClick={() => setShowServices(!showServices)}
+                    className="p-0.5 hover:bg-gray-200 rounded transition-colors"
+                    type="button"
+                  >
+                    {showServices ? (
+                      <ChevronDown className="h-4 w-4 text-gray-500" />
+                    ) : (
+                      <ChevronRight className="h-4 w-4 text-gray-500" />
+                    )}
+                  </button>
                 </div>
-                <div className="divide-y divide-gray-100">{permissionItems.services.map(item => renderPermissionItem(item, "services"))}</div>
+                {showServices && (
+                  <div className="divide-y divide-gray-100">
+                    {permissionItems.services.map(item => renderPermissionItem(item, "services"))}
+                  </div>
+                )}
               </>
             )}
 
             {/* Menus Section */}
             {permissionItems.menus.length > 0 && (
               <>
-                <div className="bg-gray-50/60 px-4 py-2 border-y border-gray-100 mt-4">
+                <div className="bg-gray-50/60 px-4 py-2 border-y border-gray-100 mt-4 flex items-center justify-between">
                   <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Menu ({permissionItems.menus.length})</h3>
+                  <button
+                    onClick={() => setShowMenus(!showMenus)}
+                    className="p-0.5 hover:bg-gray-200 rounded transition-colors"
+                    type="button"
+                  >
+                    {showMenus ? (
+                      <ChevronDown className="h-4 w-4 text-gray-500" />
+                    ) : (
+                      <ChevronRight className="h-4 w-4 text-gray-500" />
+                    )}
+                  </button>
                 </div>
-                <div className="divide-y divide-gray-100">{permissionItems.menus.map(item => renderPermissionItem(item, "menus"))}</div>
+                {showMenus && (
+                  <div className="divide-y divide-gray-100">
+                    {permissionItems.menus.map(item => renderPermissionItem(item, "menus"))}
+                  </div>
+                )}
               </>
             )}
 
