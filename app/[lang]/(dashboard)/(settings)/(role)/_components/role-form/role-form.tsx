@@ -1,7 +1,7 @@
 // app/roles/edit/[id]/page.tsx
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useRoleStore } from "@/store/role/useRoleStore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,6 +20,9 @@ const RoleForm = ({ mode, roleId }: { mode: string; roleId?: number }) => {
 
   const { formData, permissionItems, loading, error, role, roleScope, scopes, fetchScope, fetchRolesScope, setRoleName, setRoleDescription, setScopeId, setStatusActive, togglePermission, toggleAllPermissions, toggleExpanded, submitRole, resetForm, loadRoleData, initializeAll, setMode } = useRoleStore();
   const { menus } = useMenuStore();
+
+  const [showServices, setShowServices] = useState(true);
+  const [showMenus, setShowMenus] = useState(true);
   // Load role data if in edit mode
   useEffect(() => {
     fetchScope();
@@ -288,20 +291,50 @@ const RoleForm = ({ mode, roleId }: { mode: string; roleId?: number }) => {
             {/* Services Section */}
             {permissionItems.services.length > 0 && (
               <>
-                <div className="bg-gray-50/60 px-4 py-2 border-b border-gray-100">
+                <div className="bg-gray-50/60 px-4 py-2 border-b border-gray-100 flex items-center justify-between">
                   <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Services ({permissionItems.services.length})</h3>
+                  <button
+                    onClick={() => setShowServices(!showServices)}
+                    className="p-0.5 hover:bg-gray-200 rounded transition-colors"
+                    type="button"
+                  >
+                    {showServices ? (
+                      <ChevronDown className="h-4 w-4 text-gray-500" />
+                    ) : (
+                      <ChevronRight className="h-4 w-4 text-gray-500" />
+                    )}
+                  </button>
                 </div>
-                <div className="divide-y divide-gray-100">{permissionItems.services.map(item => renderPermissionItem(item, "services"))}</div>
+                {showServices && (
+                  <div className="divide-y divide-gray-100">
+                    {permissionItems.services.map(item => renderPermissionItem(item, "services"))}
+                  </div>
+                )}
               </>
             )}
 
             {/* Menus Section */}
             {permissionItems.menus.length > 0 && (
               <>
-                <div className="bg-gray-50/60 px-4 py-2 border-y border-gray-100 mt-4">
+                <div className="bg-gray-50/60 px-4 py-2 border-y border-gray-100 mt-4 flex items-center justify-between">
                   <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Menu ({permissionItems.menus.length})</h3>
+                  <button
+                    onClick={() => setShowMenus(!showMenus)}
+                    className="p-0.5 hover:bg-gray-200 rounded transition-colors"
+                    type="button"
+                  >
+                    {showMenus ? (
+                      <ChevronDown className="h-4 w-4 text-gray-500" />
+                    ) : (
+                      <ChevronRight className="h-4 w-4 text-gray-500" />
+                    )}
+                  </button>
                 </div>
-                <div className="divide-y divide-gray-100">{permissionItems.menus.map(item => renderPermissionItem(item, "menus"))}</div>
+                {showMenus && (
+                  <div className="divide-y divide-gray-100">
+                    {permissionItems.menus.map(item => renderPermissionItem(item, "menus"))}
+                  </div>
+                )}
               </>
             )}
 
