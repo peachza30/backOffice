@@ -11,7 +11,7 @@ import { useRouter } from "next/navigation";
 import ConfirmDialog from "@/app/[lang]/(dashboard)/(settings)/(service)/_components/dialog/confirm-dialog";
 import SuccessDialog from "../dialog/success-dialog";
 
-const ServiceForm = ({ mode }: { mode: "create" | "edit" }) => {
+const ServiceForm = ({ mode, serviceId }: { mode: string; serviceId?: number }) => {
   const { service, createService, updateService } = useServiceStore();
   const [serviceName, setServiceName] = useState("");
   const [description, setDescription] = useState("");

@@ -23,7 +23,7 @@
     }, []);
 
     return (
-      <div className="h-max p-4 bg-gray-50">
+      <div className="h-max p-4">
         <Card className="flex flex-col h-full">
           <CardHeader className="border-none pt-5 pl-6 pr-6">
             <div className="flex items-center justify-between w-full">
@@ -31,8 +31,8 @@
             </div>
           </CardHeader>
           <CardContent className="flex-grow">
-            {mode === "view" && <ServiceView />}
-            {mode === "edit" && <ServiceForm mode={mode} />}
+            {mode === "view" && <ServiceView serviceId={params.id} />}
+            {mode === "edit" && <ServiceForm mode={mode} serviceId={params.id} />}
             {!mode && <div>No mode specified</div>}
           </CardContent>
         </Card>

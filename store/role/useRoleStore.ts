@@ -168,12 +168,20 @@ const transformMenusToMenuItems = (menus: ApiMenu[]): MenuItemProps[] => {
 };
 
 const initialFormData: RoleFormData = {
+  id: null,
+  role_id: null,
   role_name: '',
-  role_description: '',
+  description: '',
   scope_id: null,
   status_active: true,
   services: [],
-  menus: []
+  menus: [],
+  created_at: '',
+  updated_at: '',
+  deleted_at: '',
+  created_by: null,
+  updated_by: null,
+  deleted_by: null
 };
 
 const getInitialPermissionItems = () => ({
@@ -215,6 +223,8 @@ export const useRoleStore = create<RoleStore>()(
         },
         fetchRolesScope: async (scope) => {
           const { roleScopes } = get();
+          console.log("scope", scope);
+          console.log("roleScopes", roleScopes);
           if (roleScopes[scope]) return;
           set({ loading: true, error: null });
           try {

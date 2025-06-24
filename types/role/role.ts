@@ -67,8 +67,8 @@ interface PermissionItem {
   children?: PermissionItem[];
 }
 interface RoleFormData {
-  id: number,
-  role_id: number,
+  id: number | null;
+  role_id: number | null;
   role_name: string;
   description?: string;
   status: string,

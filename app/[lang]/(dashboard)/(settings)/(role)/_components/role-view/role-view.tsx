@@ -1,7 +1,7 @@
 // app/roles/edit/[id]/page.tsx
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useRoleStore } from "@/store/role/useRoleStore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,69 +13,87 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { ChevronDown, ChevronRight, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useUserStore } from "@/store/users/useUserStore";
 
-const RoleForm = ({ mode, roleId }: { mode: string; roleId?: number }) => {
-  const router = useRouter();
-
+const RoleView = ({ mode, roleId }: { mode: string; roleId?: number }) => {
   const { formData, permissionItems, loading, error, role, roleScope, scopes, fetchScope, fetchRolesScope, setRoleName, setRoleDescription, setScopeId, setStatusActive, togglePermission, toggleAllPermissions, toggleExpanded, submitRole, resetForm, loadRoleData, initializeAll, setMode } = useRoleStore();
+  const { userById, userByUpdated, fetchUserById, fetchUserByUpdatedId } = useUserStore();
+  const router = useRouter();
+  const [lastModified, setLastModified] = useState("");
+  const [modifiedBy, setModifiedBy] = useState("");
 
-  // Load role data if in edit mode
   useEffect(() => {
-    fetchScope();
-    if (roleId) {
-      loadRoleData(roleId);
-    } else {
-      initializeAll();
+    if (formData) {
+      console.log("formData", formData);
+      fetchUserById(formData.updated_by ?? 0); // or some other default value
     }
-  }, [roleId, loadRoleData]);
+  }, [formData]);
 
   useEffect(() => {
-    if (formData.scope_id) {
-      fetchRolesScope(formData.scope_id);
+    if (userById) {
+      const updatedBy = userById.updated_by;
+
+      const fetchUserData = async () => {
+        if (updatedBy) {
+          try {
+            await fetchUserByUpdatedId(updatedBy);
+          } catch (error) {
+            console.error("Failed to fetch user:", error);
+          }
+        }
+      };
+      console.log("userById", userById);
+
+      fetchUserData();
+
+      if (userById) {
+        const updatedAt = userById?.updated_at ?? "";
+        const isValidDate = updatedAt && !isNaN(Date.parse(updatedAt));
+        const firstName = userById?.first_name ?? "";
+        const lastName = userById?.last_name ?? "";
+        const userName = firstName && lastName ? `${firstName}.${lastName.slice(0, 2)}` : "Unknown User";
+
+        setModifiedBy(userName || "");
+        setLastModified(
+          isValidDate
+            ? new Intl.DateTimeFormat("th-TH", {
+                year: "numeric",
+                month: "numeric",
+                day: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+                hour12: false,
+              }).format(new Date(updatedAt))
+            : "-"
+        );
+      }
     }
   }, []);
 
-  const handleSubmit = async () => {
-    try {
-      if (!formData.role_name.trim()) {
-        toast.error("Please enter a role name");
-        return;
+  useEffect(() => {
+    (async () => {
+      await fetchScope();
+      if (roleId) {
+        await loadRoleData(roleId);
+      } else {
+        await initializeAll();
       }
-
-      if (!formData.scope_id) {
-        toast.error("Please select a scope");
-        return;
-      }
-
-      // Check if at least one permission is selected
-      const hasServicePermissions = permissionItems.services.some(service => hasAnyPermission(service));
-      const hasMenuPermissions = permissionItems.menus.some(menu => hasAnyPermission(menu));
-
-      if (!hasServicePermissions && !hasMenuPermissions) {
-        toast.error("Please select at least one permission");
-        return;
-      }
-
-      await submitRole();
-      toast.success(roleId ? "Role updated successfully" : "Role created successfully");
-      // router.push("/roles");
-    } catch (error) {
-      console.error("Submit error:", error);
-      toast.error(roleId ? "Failed to update role" : "Failed to create role");
-    }
-  };
+    })();
+  }, [roleId, loadRoleData]);
 
   const handleCancel = () => {
     resetForm();
     router.push("/roles");
   };
 
+  useEffect(() => {
+    fetchRolesScope(formData.scope_id);
+  }, []);
+  console.log("roleScope", roleScope);
   // Helper function to check if item has any permission
   const hasAnyPermission = (item: PermissionItem): boolean => {
-    const hasDirectPermission = item.permissions.can_create || 
-                               item.permissions.can_read || 
-                               item.permissions.can_update || 
-                               item.permissions.can_delete;
+    const hasDirectPermission = item.permissions.can_create || item.permissions.can_read || item.permissions.can_update || item.permissions.can_delete;
 
     const hasChildPermission = item.children?.some(child => hasAnyPermission(child)) || false;
 
@@ -83,15 +101,9 @@ const RoleForm = ({ mode, roleId }: { mode: string; roleId?: number }) => {
   };
 
   const renderPermissionItem = (item: PermissionItem, category: "services" | "menus", level: number = 0) => {
-    const allChecked = item.permissions.can_create && 
-                      item.permissions.can_read && 
-                      item.permissions.can_update && 
-                      item.permissions.can_delete;
+    const allChecked = item.permissions.can_create && item.permissions.can_read && item.permissions.can_update && item.permissions.can_delete;
 
-    const hasAnyChecked = item.permissions.can_create || 
-                         item.permissions.can_read || 
-                         item.permissions.can_update || 
-                         item.permissions.can_delete;
+    const hasAnyChecked = item.permissions.can_create || item.permissions.can_read || item.permissions.can_update || item.permissions.can_delete;
 
     const hasChildren = item.children && item.children.length > 0;
     const isExpanded = item.isExpanded;
@@ -101,11 +113,7 @@ const RoleForm = ({ mode, roleId }: { mode: string; roleId?: number }) => {
         <div className={`grid grid-cols-6 gap-4 py-3 px-4 border-b border-gray-100 hover:bg-gray-50/50 transition-colors ${level > 0 ? "pl-10" : ""}`}>
           <div className="flex items-center gap-2">
             {hasChildren && (
-              <button 
-                onClick={() => toggleExpanded(category, item.id)} 
-                className="p-0.5 hover:bg-gray-200 rounded transition-colors" 
-                type="button"
-              >
+              <button onClick={() => toggleExpanded(category, item.id)} className="p-0.5 hover:bg-gray-200 rounded transition-colors" type="button">
                 {isExpanded ? <ChevronDown className="h-4 w-4 text-gray-500" /> : <ChevronRight className="h-4 w-4 text-gray-500" />}
               </button>
             )}
@@ -174,11 +182,7 @@ const RoleForm = ({ mode, roleId }: { mode: string; roleId?: number }) => {
           </div>
         </div>
 
-        {hasChildren && isExpanded && (
-          <div className="bg-gray-50/30">
-            {item.children!.map(child => renderPermissionItem(child, category, level + 1))}
-          </div>
-        )}
+        {hasChildren && isExpanded && <div className="bg-gray-50/30">{item.children!.map(child => renderPermissionItem(child, category, level + 1))}</div>}
       </div>
     );
   };
@@ -191,9 +195,7 @@ const RoleForm = ({ mode, roleId }: { mode: string; roleId?: number }) => {
           <div className="flex items-center justify-center py-12">
             <div className="text-center">
               <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-blue-600" />
-              <p className="text-gray-600">
-                {roleId ? "Loading role configuration..." : "Preparing role configuration..."}
-              </p>
+              <p className="text-gray-600">{roleId ? "Loading role configuration..." : "Preparing role configuration..."}</p>
             </div>
           </div>
         </div>
@@ -206,117 +208,77 @@ const RoleForm = ({ mode, roleId }: { mode: string; roleId?: number }) => {
 
   return (
     <>
-      <Card className="flex flex-col h-full">
-        <CardHeader className="pb-4 border-b border-gray-100">
-          <CardTitle className="text-xs font-semibold text-gray-600 uppercase tracking-wider">
-            View Role Details
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="pt-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <Label htmlFor="role-name" className="text-xs font-medium text-gray-600 uppercase tracking-wider">
-                Role Name <span className="text-red-500">*</span>
-              </Label>
-              <Input 
-                id="role-name" 
-                placeholder="Please enter role name" 
-                value={formData.role_name || ""} 
-                onChange={e => setRoleName(e.target.value)} 
-                className="h-10 border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all" 
-              />
+      <div className="flex flex-col h-full">
+        <CardContent className="pt-1">
+          {/* Header */}
+          {/* Service Details Grid */}
+          <div className="space-y-2 pb-10">
+            {/* Service ID */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center py-4 border-b border-gray-100">
+              <Label className="text-sm font-medium text-gray-600 uppercase tracking-wide">ROLE ID</Label>
+              <div className="md:col-span-2">
+                <span className="text-gray-900">{roleId}</span>
+              </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="role-description" className="text-xs font-medium text-gray-600 uppercase tracking-wider">
-                Role Description
-              </Label>
-              <Input 
-                id="role-description" 
-                placeholder="Please enter role description" 
-                value={formData.role_description || ""} 
-                onChange={e => setRoleDescription(e.target.value)} 
-                className="h-10 border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all" 
-              />
+            {/* ROLE Name */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center py-4 border-b border-gray-100">
+              <Label className="text-sm font-medium text-gray-600 uppercase tracking-wide">ROLE NAME</Label>
+              <div className="md:col-span-2">
+                <span className="text-gray-900">{formData.role_name || ""}</span>
+              </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="scope" className="text-xs font-medium text-gray-600 uppercase tracking-wider">
-                Scope <span className="text-red-500">*</span>
-              </Label>
-              <Select value={roleId && formData.scope_id != null ? formData.scope_id.toString() : undefined} onValueChange={value => setScopeId(parseInt(value))}>
-                <SelectTrigger className="h-10 border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all ">
-                  <SelectValue placeholder="Please select scope" />
-                </SelectTrigger>
-                <SelectContent>
-                  {scopes?.map(scope => (
-                    <SelectItem key={scope.id} value={scope.id.toString()}>
-                      {scope.scope_name.toUpperCase()}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            {/* ROLE Description */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start py-4 border-b border-gray-100">
+              <Label className="text-sm font-medium text-gray-600 uppercase tracking-wide">ROLE DESCRIPTION</Label>
+              <div className="md:col-span-2">
+                <span className="text-gray-900">{formData.description || ""}</span>
+              </div>
+            </div>
+            {/* ROLE Description */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start py-4 border-b border-gray-100">
+              <Label className="text-sm font-medium text-gray-600 uppercase tracking-wide">SCOPE</Label>
+              <div className="md:col-span-2">
+                <span className="text-gray-900">{roleId && formData.scope_id != null ? formData.scope_id.toString() : undefined}</span>
+              </div>
             </div>
 
-            <div className="space-y-2">
-              <Label className="text-xs font-medium text-gray-600 uppercase tracking-wider">Status Active</Label>
-              <div className="pt-2">
-                <button 
-                  onClick={() => setStatusActive(!formData.status_active)} 
-                  className={`px-3 py-1 text-xs font-medium rounded-full transition-all ${
-                    formData.status_active
-                      ? "bg-green-100 text-green-700 hover:bg-green-200" 
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                  }`} 
-                  type="button"
-                >
+            {/* Status Active */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center py-4 border-b border-gray-100">
+              <Label className="text-sm font-medium text-gray-600 uppercase tracking-wide">STATUS ACTIVE</Label>
+              <div className="md:col-span-2">
+                <Badge color={formData.status_active ? "success" : "warning"} variant="soft" className="uppercase">
                   {formData.status_active ? "ACTIVE" : "INACTIVE"}
-                </button>
+                </Badge>
+              </div>
+            </div>
+
+            {/* Last Modified */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center py-4 border-b border-gray-100">
+              <Label className="text-sm font-medium text-gray-600 uppercase tracking-wide">LAST MODIFIED</Label>
+              <div className="md:col-span-2">
+                <span className="text-gray-900">{lastModified}</span>
+              </div>
+            </div>
+
+            {/* Modified By */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center py-4 border-b border-gray-100">
+              <Label className="text-sm font-medium text-gray-600 uppercase tracking-wide">MODIFIED BY</Label>
+              <div className="md:col-span-2">
+                <span className="text-gray-900">{modifiedBy}</span>
               </div>
             </div>
           </div>
-
-          {/* Show role metadata if available in edit mode */}
-          {roleId && role && (
-            <div className="mt-6 pt-6 border-t border-gray-100">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                <div>
-                  <span className="text-gray-500">Role ID:</span>
-                  <span className="ml-2 font-medium">{role.role_id}</span>
-                </div>
-                <div>
-                  <span className="text-gray-500">Created:</span>
-                  <span className="ml-2 font-medium">{new Date(role.created_at).toLocaleDateString()}</span>
-                </div>
-                <div>
-                  <span className="text-gray-500">Updated:</span>
-                  <span className="ml-2 font-medium">{new Date(role.updated_at).toLocaleDateString()}</span>
-                </div>
-                <div>
-                  <span className="text-gray-500">Status:</span>
-                  <span className="ml-2">
-                    <Badge 
-                      color={role.status === "A" ? "success" : "destructive"} 
-                      variant="soft" 
-                      className={role.status === "A" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-700"}
-                    >
-                      {role.status === "A" ? "Active" : "Inactive"}
-                    </Badge>
-                  </span>
-                </div>
-              </div>
-            </div>
-          )}
         </CardContent>
-      </Card>
-
+      </div>
       <Card className="shadow-sm border border-gray-200 bg-white">
-        <CardHeader className="pb-4 border-b border-gray-100">
-          <CardTitle className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Set Permission</CardTitle>
-          <p className="text-sm text-gray-500 mt-1">Configure permissions for services and menu access</p>
-        </CardHeader>
+        {/* <CardHeader className="pb-4 border-b border-gray-100"> */}
+          {/* <CardTitle className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Set Permission</CardTitle>
+          <p className="text-sm text-gray-500 mt-1">Configure permissions for services and menu access</p> */}
+        {/* </CardHeader> */}
         <CardContent className="p-0">
-          <div className="bg-gray-50 border-b border-gray-200">
+          <div className="bg-blue-50 border-b border-gray-200">
             <div className="grid grid-cols-6 gap-4 py-3 px-4">
               <div className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Role Permission</div>
               <div className="text-xs font-semibold text-gray-600 text-center uppercase tracking-wider">All</div>
@@ -332,13 +294,9 @@ const RoleForm = ({ mode, roleId }: { mode: string; roleId?: number }) => {
             {permissionItems.services.length > 0 && (
               <>
                 <div className="bg-gray-50/60 px-4 py-2 border-b border-gray-100">
-                  <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    Services ({permissionItems.services.length})
-                  </h3>
+                  <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Services ({permissionItems.services.length})</h3>
                 </div>
-                <div className="divide-y divide-gray-100">
-                  {permissionItems.services.map(item => renderPermissionItem(item, "services"))}
-                </div>
+                <div className="divide-y divide-gray-100">{permissionItems.services.map(item => renderPermissionItem(item, "services"))}</div>
               </>
             )}
 
@@ -346,13 +304,9 @@ const RoleForm = ({ mode, roleId }: { mode: string; roleId?: number }) => {
             {permissionItems.menus.length > 0 && (
               <>
                 <div className="bg-gray-50/60 px-4 py-2 border-y border-gray-100 mt-4">
-                  <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    Menu ({permissionItems.menus.length})
-                  </h3>
+                  <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Menu ({permissionItems.menus.length})</h3>
                 </div>
-                <div className="divide-y divide-gray-100">
-                  {permissionItems.menus.map(item => renderPermissionItem(item, "menus"))}
-                </div>
+                <div className="divide-y divide-gray-100">{permissionItems.menus.map(item => renderPermissionItem(item, "menus"))}</div>
               </>
             )}
 
@@ -360,11 +314,7 @@ const RoleForm = ({ mode, roleId }: { mode: string; roleId?: number }) => {
             {permissionItems.services.length === 0 && permissionItems.menus.length === 0 && (
               <div className="py-12 text-center">
                 <p className="text-gray-500">Loading permissions...</p>
-                <p className="text-xs text-gray-400 mt-2">
-                  {!roleId 
-                    ? "Preparing permissions for new role assignment" 
-                    : "Please check your configuration if this persists"}
-                </p>
+                <p className="text-xs text-gray-400 mt-2">{!roleId ? "Preparing permissions for new role assignment" : "Please check your configuration if this persists"}</p>
               </div>
             )}
           </div>
@@ -372,27 +322,12 @@ const RoleForm = ({ mode, roleId }: { mode: string; roleId?: number }) => {
       </Card>
 
       <div className="mt-6 flex gap-3">
-        <Button onClick={handleSubmit} disabled={loading} className="bg-blue-600 hover:bg-blue-700 text-white px-6">
-          {loading ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin mr-2" />
-              {roleId ? "Updating..." : "Creating..."}
-            </>
-          ) : (
-            roleId ? "Update" : "Create"
-          )}
-        </Button>
-        <Button 
-          variant="outline" 
-          onClick={handleCancel} 
-          disabled={loading} 
-          className="border-gray-300 text-gray-700 hover:bg-gray-50 px-6"
-        >
-          Cancel
+        <Button variant="outline" onClick={handleCancel} disabled={loading} className="border-gray-300 text-gray-700 hover:bg-gray-50 px-6">
+          Back
         </Button>
       </div>
     </>
   );
 };
 
-export default RoleForm;
+export default RoleView;
