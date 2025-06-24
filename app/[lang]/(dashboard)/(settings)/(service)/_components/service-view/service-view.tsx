@@ -47,41 +47,20 @@ const ServiceView = ({ serviceId }: { serviceId: number }) => {
 
       fetchUserData();
       // Added dependencies
+      const updatedAt = service.updated_at;
+      const userName = user ? `${user.first_name}.${user.last_name.slice(0, 2)}` : "Unknown User";
 
-      console.log("service", service);
-      if (service) {
-        setMenuTopic("Service Details");
-        setServiceName(service.service_name || "");
-        setServiceCode(service.service_code || "");
-        setDescription(service.service_description || "");
-        setShow(service.status === "A");
-        setStatus(service.status);
-        if (userById) {
-          const updatedAt = userById?.updated_at ?? "";
-          const isValidDate = updatedAt && !isNaN(Date.parse(updatedAt));
-          const firstName = userById?.first_name ?? "";
-          const lastName = userById?.last_name ?? "";
-          const userName = firstName && lastName ? `${firstName}.${lastName.slice(0, 2)}` : "Unknown User";
-
-          setModifiedBy(userName || "");
-          setLastModified(
-            isValidDate
-              ? new Intl.DateTimeFormat("th-TH", {
-                  year: "numeric",
-                  month: "numeric",
-                  day: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  second: "2-digit",
-                  hour12: false,
-                }).format(new Date(updatedAt))
-              : "-"
-          );
-        }
-      }
+      setMenuTopic("Service Details");
+      setServiceId(service.id || 0);
+      setServiceName(service.service_name || "");
+      setServiceCode(service.service_code || "");
+      setDescription(service.service_description || "");
+      setShow(service.status === "A");
+      setStatus(service.status);
+      setLastModified(userName || "");
+      setModifiedBy(new Intl.DateTimeFormat("th-TH", { year: "numeric", month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false }).format(new Date(updatedAt)));
     }
   }, [service]);
-
   useEffect(() => {
     if (show) {
       setStatus("A");
