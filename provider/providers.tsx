@@ -6,16 +6,20 @@ import { Toaster as ReactToaster } from "@/components/ui/toaster";
 import { Toaster } from "react-hot-toast";
 import { SonnToaster } from "@/components/ui/sonner";
 import { usePathname } from "next/navigation";
-
+import { Noto_Sans_Thai } from "next/font/google";
 // Use a generic sans-serif font to avoid network font downloads during build
-const inter = { className: "font-sans" } as const;
+const notoSansThai = Noto_Sans_Thai({
+  subsets: ["thai", "latin"],
+  weight: ["400", "700"],
+  display: "swap",
+});
 const Providers = ({ children }: { children: React.ReactNode }) => {
   const { theme, radius } = useThemeStore();
   const location = usePathname();
 
   if (location === "/") {
     return (
-      <body className={cn("dash-tail-app ", inter.className)}>
+      <body className={cn("dash-tail-app ", notoSansThai.className)}>
         <ThemeProvider
           attribute="class"
           enableSystem={false}
@@ -33,7 +37,7 @@ const Providers = ({ children }: { children: React.ReactNode }) => {
   }
   return (
     <body
-      className={cn("dash-tail-app ", inter.className, "theme-" + theme)}
+      className={cn("dash-tail-app ", notoSansThai.className, "theme-" + theme)}
       style={{
         "--radius": `${radius}rem`,
       } as React.CSSProperties

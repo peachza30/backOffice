@@ -21,15 +21,29 @@ const MenuManagement: React.FC = () => {
   const [currentDropZone, setCurrentDropZone] = useState<DropZone | null>(null);
   const [expandedItems, setExpandedItems] = useState<Set<number>>(new Set());
   const [openModal, setOpenModal] = useState(false);
+  const [openSuccessModal, setOpenSuccessModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
   const [search, setSearch] = useState("");
   const [statusVal, setStatusVal] = useState("");
   const [fetchClear, setFetchClear] = useState(false);
   const [loading, setLoading] = useState(false);
   const [deletedItems, setDeletedItems] = useState<Set<number>>(new Set());
-  const [openSuccessModal, setOpenSuccessModal] = useState(false);
+
+  let confirmResetDialogConfig = {};
   let confirmDialogConfig = {};
+  let successResetDialogConfig = {};
   let successDialogConfig = {};
+
+  confirmResetDialogConfig = {
+    title: "Confirm Reset Reordering?",
+    icon: "stash:question",
+    class: "destructive",
+    color: "#EF4444",
+    body: "Do you want to reset reordering to default?",
+    sub: "Resetting this item is irreversible. Are you sure you want to continue?",
+    confirmButton: "Yes, Reset",
+    cancelButton: "Cancel",
+  };
   confirmDialogConfig = {
     title: "Confirm Delete Service?",
     icon: "stash:question",
@@ -41,6 +55,11 @@ const MenuManagement: React.FC = () => {
     cancelButton: "Cancel",
   };
 
+  successResetDialogConfig = {
+    icon: "solar:verified-check-outline",
+    body: "Reset reordering successfully.",
+    color: "#22C55E",
+  };
   successDialogConfig = {
     icon: "solar:verified-check-outline",
     body: "Delete service successfully.",
@@ -143,9 +162,20 @@ const MenuManagement: React.FC = () => {
 
   const handleConfirm = (): void => {
     if (!selectedItem) return;
+    console.log("selectedItem", selectedItem);
     setOpenSuccessModal(true);
     setOpenModal(false);
-    setDeletedItems(prev => new Set([...prev, selectedItem.id]));
+    if (selectedItem.id !== undefined) {
+      // setDeletedItems(prev => new Set([...prev, selectedItem.id]));
+      deleteMenu(selectedItem.id, {
+        search: "",
+        status: "",
+        page: 1,
+        limit: 10,
+        sort: "created_at",
+        order: "DESC",
+      });
+    }
     setSelectedItem(null);
   };
   // const handleDelete = (item: MenuItem): void => {
@@ -499,7 +529,11 @@ const MenuManagement: React.FC = () => {
                         </span>
                       </TooltipTrigger>
                       <TooltipContent color="destructive" side="top">
-                        <p>Delete children first</p>
+                        <p>
+                          Clear submenus before delete {"("}
+                          {item.children.length}
+                          {")"}
+                        </p>
                         <TooltipArrow className="fill-destructive" />
                       </TooltipContent>
                     </Tooltip>
@@ -687,12 +721,15 @@ const MenuManagement: React.FC = () => {
   };
 
   const resetMenu = () => {
-    if (confirm("Reset all changes and restore original menu structure?")) {
-      setMenusList(JSON.parse(JSON.stringify(originalMenus))); // Deep clone
-      setDeletedItems(new Set()); // Clear deleted items
-    }
+    setOpenModal(true);
   };
 
+  const handleConfirmReset = () => {
+    setMenusList(JSON.parse(JSON.stringify(originalMenus))); // Deep clone
+    setDeletedItems(new Set()); // Clear deleted items
+    setOpenModal(false);
+    setOpenSuccessModal(true);
+  };
   const saveChanges = async () => {
     // First, remove all deleted items from menusList
     const removeDeletedItems = (items: MenuItem[]): MenuItem[] => {
@@ -771,15 +808,19 @@ const MenuManagement: React.FC = () => {
 
   return (
     <div className="">
-      {openModal && (
-        <ConfirmDialog
-          open={openModal}
-          onOpenChange={setOpenModal}
-          onConfirm={handleConfirm}
-          dialogConfig={confirmDialogConfig}
-        />
-      )}
+      {/* Dialog */}
+      {openModal && <ConfirmDialog open={openModal} onOpenChange={setOpenModal} onConfirm={handleConfirm} dialogConfig={confirmDialogConfig} />}
       {openSuccessModal && <SuccessDialog open={openSuccessModal} onOpenChange={setOpenSuccessModal} dialogConfig={successDialogConfig} />}
+
+      {/* Loading Overlay */}
+      {loading && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 flex flex-col items-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            <p className="mt-4 text-gray-700">Loading...</p>
+          </div>
+        </div>
+      )}
       {/* <div className="p-1 md:p-5 grid grid-cols-[auto_1fr_1fr_auto] gap-4 items-center text-default-900"> */}
       {/* <p className="">Status</p> */}
       {/* <div className=""> */}

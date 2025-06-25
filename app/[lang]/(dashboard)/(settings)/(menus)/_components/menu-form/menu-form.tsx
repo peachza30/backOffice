@@ -18,6 +18,7 @@ import { InputGroup, InputGroupButton, InputGroupText } from "@/components/ui/in
 import IconifySelector from "../iconify-selector/iconify-selector";
 import { SelectViewport } from "@radix-ui/react-select";
 import { SearchableSelect } from "../searchable-input/searchable-input";
+import SuccessDialog from "../dialog/success-dialog";
 const MenuForm = ({ mode }: { mode: "create" | "edit" }) => {
   const { menus, menu, iconName, setIconName, getMenus, createMenu, updateMenu } = useMenuStore();
   const [menuId, setMenuId] = useState(0);
@@ -28,6 +29,7 @@ const MenuForm = ({ mode }: { mode: "create" | "edit" }) => {
   const [menuTopic, setMenuTopic] = useState("");
   const [openModal, setOpenModal] = useState(false);
   const [menuVal, setMenuVal] = useState(0);
+  const [openSuccessModal, setOpenSuccessModal] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -100,14 +102,24 @@ const MenuForm = ({ mode }: { mode: "create" | "edit" }) => {
       } else if (menu?.id) {
         await updateMenu(menu.id, menuData);
       }
-      setOpenModal(false);
+      setOpenSuccessModal(true);
+      setOpenModal(false); 
       // router.push("/menus-list");
     } catch (error) {
       console.error("Error saving menu:", error);
       alert("Failed to save menu. Please try again.");
     }
   };
+  const handleSuccessModalChange = (isOpen: boolean) => {
+    if (!isOpen) {
+      router.push("/menus-list");
+    }
+    setOpenSuccessModal(isOpen);
+  };
+
   let dialogConfig = {};
+  let successDialogConfig = {};
+
   if (mode && mode === "create") {
     dialogConfig = {
       title: "Confirm Menu Creation?",
@@ -118,6 +130,11 @@ const MenuForm = ({ mode }: { mode: "create" | "edit" }) => {
       sub: "Please confirm the creation of the new menu, You can edit or delete this menu later.",
       confirmButton: "Confirm",
       cancelButton: "Cancel",
+    };
+    successDialogConfig = {
+      icon: "solar:verified-check-outline",
+      body: "Menu created successfully.",
+      color: "#22C55E",
     };
   } else if (mode && mode === "edit") {
     dialogConfig = {
@@ -130,15 +147,17 @@ const MenuForm = ({ mode }: { mode: "create" | "edit" }) => {
       confirmButton: "Confirm",
       cancelButton: "Cancel",
     };
+    successDialogConfig = {
+      icon: "solar:verified-check-outline",
+      body: "Changes saved successfully.",
+      color: "#22C55E",
+    };
   }
 
   return (
     <form onSubmit={handleSubmit}>
-      {openModal && (
-        <>
-          <ConfirmDialog open={openModal} onOpenChange={setOpenModal} onConfirm={handleConfirm} dialogConfig={dialogConfig} />
-        </>
-      )}
+      {openModal && <ConfirmDialog open={openModal} onOpenChange={setOpenModal} onConfirm={handleConfirm} dialogConfig={dialogConfig} />}
+      {openSuccessModal && <SuccessDialog open={openSuccessModal} onOpenChange={handleSuccessModalChange} dialogConfig={successDialogConfig} />}
       <div className="pl-2 pb-1 grid grid-cols-[auto_1fr_1fr_auto] gap-2 items-center text-default-900">
         <p>{menuTopic}</p>
       </div>

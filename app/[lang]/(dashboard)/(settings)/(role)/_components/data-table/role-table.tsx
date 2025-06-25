@@ -167,17 +167,9 @@ const columns: ColumnDef<RoleScope>[] = [
         setOpenModal(true);
       };
       const handleConfirm = () => {
-        
         setOpenSuccessModal(true);
         setOpenModal(false);  
-        deleteRole(role.id, {
-          search: "",
-          status: "",
-          page: 1,
-          limit: 10,
-          sort: "created_at",
-          order: "ASC",
-        });
+        deleteRole(role.id, {});
       };
 
       return (
