@@ -21,6 +21,7 @@ const MenuManagement: React.FC = () => {
   const [currentDropZone, setCurrentDropZone] = useState<DropZone | null>(null);
   const [expandedItems, setExpandedItems] = useState<Set<number>>(new Set());
   const [openModal, setOpenModal] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
   const [search, setSearch] = useState("");
   const [statusVal, setStatusVal] = useState("");
   const [fetchClear, setFetchClear] = useState(false);
@@ -136,13 +137,16 @@ const MenuManagement: React.FC = () => {
       alert(`Cannot delete "${item.menu_name}" because it has ${item.children.length} child menu(s). Please delete all children first.`);
       return;
     }
+    setSelectedItem(item);
     setOpenModal(true);
   };
 
-  const handleConfirm = (item: MenuItem): void => {
+  const handleConfirm = (): void => {
+    if (!selectedItem) return;
     setOpenSuccessModal(true);
     setOpenModal(false);
-    setDeletedItems(prev => new Set([...prev, item.id]));
+    setDeletedItems(prev => new Set([...prev, selectedItem.id]));
+    setSelectedItem(null);
   };
   // const handleDelete = (item: MenuItem): void => {
   //   if (item.children && item.children.length > 0) {
@@ -767,7 +771,14 @@ const MenuManagement: React.FC = () => {
 
   return (
     <div className="">
-      {openModal && <ConfirmDialog open={openModal} onOpenChange={setOpenModal} onConfirm={() => handleConfirm(item)} dialogConfig={confirmDialogConfig}></ConfirmDialog>}
+      {openModal && (
+        <ConfirmDialog
+          open={openModal}
+          onOpenChange={setOpenModal}
+          onConfirm={handleConfirm}
+          dialogConfig={confirmDialogConfig}
+        />
+      )}
       {openSuccessModal && <SuccessDialog open={openSuccessModal} onOpenChange={setOpenSuccessModal} dialogConfig={successDialogConfig} />}
       {/* <div className="p-1 md:p-5 grid grid-cols-[auto_1fr_1fr_auto] gap-4 items-center text-default-900"> */}
       {/* <p className="">Status</p> */}

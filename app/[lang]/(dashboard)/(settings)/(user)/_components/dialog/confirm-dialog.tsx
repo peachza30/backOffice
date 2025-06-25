@@ -5,11 +5,6 @@ import { Icon } from "@iconify/react";
 interface ConfirmDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-}
-
-interface ConfirmDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
   onConfirm: () => void;
   dialogConfig: {
     title?: string;
