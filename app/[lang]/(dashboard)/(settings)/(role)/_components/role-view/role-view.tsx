@@ -216,6 +216,7 @@ const RoleView = ({ mode, roleId }: { mode: string; roleId?: number }) => {
   return (
     <>
       <div className="flex flex-col h-full">
+        {/* Card Header */}
         <CardContent className="pt-1">
           {/* Header */}
           {/* Service Details Grid */}
@@ -279,7 +280,11 @@ const RoleView = ({ mode, roleId }: { mode: string; roleId?: number }) => {
           </div>
         </CardContent>
       </div>
-      <Card className="shadow-sm border border-gray-200 bg-white">
+      <div>
+        <div className="mb-4 text-lg font-semibold text-gray-800 flex items-center gap-2">
+          <p>Set permissions</p>
+        </div>
+
         {/* <CardHeader className="pb-4 border-b border-gray-100">
           <CardTitle className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Set Permission</CardTitle>
           <p className="text-sm text-gray-500 mt-1">Configure permissions for services and menu access</p>
@@ -315,7 +320,7 @@ const RoleView = ({ mode, roleId }: { mode: string; roleId?: number }) => {
             {/* Menus Section */}
             {permissionItems.menus.length > 0 && (
               <>
-                <div className="bg-gray-50/60 px-4 py-2 border-y border-gray-100 mt-4 flex items-center justify-between">
+                <div className="bg-gray-50/60 px-4 py-2 border-y border-gray-100 flex items-center justify-between">
                   <div className="flex items-center">
                     <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Menu ({permissionItems.menus.length})</h3>
                     <button onClick={() => setShowMenus(!showMenus)} className="ml-2 p-0.5  hover:bg-gray-200 rounded transition-colors" type="button">
@@ -336,7 +341,7 @@ const RoleView = ({ mode, roleId }: { mode: string; roleId?: number }) => {
             )}
           </div>
         </CardContent>
-      </Card>
+      </div>
 
       <div className="mt-6 flex gap-3">
         <Button variant="outline" onClick={handleBack} disabled={loading} className="border-gray-300 text-gray-700 hover:bg-gray-50 px-6">

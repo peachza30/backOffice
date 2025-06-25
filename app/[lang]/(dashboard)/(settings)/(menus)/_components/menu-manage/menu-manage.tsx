@@ -6,9 +6,12 @@ import { useMenuStore } from "@/store/menu/useMenuStore";
 import { mapMenuHierarchy } from "@/utils/Constant";
 import { Toggle } from "@/components/ui/toggle";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipArrow, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { InputGroup, InputGroupText } from "@/components/ui/input-group";
 import { Input } from "@/components/ui/input";
+import ConfirmDialog from "../dialog/confirm-dialog";
+import SuccessDialog from "../dialog/success-dialog";
 
 const MenuManagement: React.FC = () => {
   const [originalMenus, setOriginalMenus] = useState<MenuItem[]>([]);
@@ -23,7 +26,25 @@ const MenuManagement: React.FC = () => {
   const [fetchClear, setFetchClear] = useState(false);
   const [loading, setLoading] = useState(false);
   const [deletedItems, setDeletedItems] = useState<Set<number>>(new Set());
+  const [openSuccessModal, setOpenSuccessModal] = useState(false);
+  let confirmDialogConfig = {};
+  let successDialogConfig = {};
+  confirmDialogConfig = {
+    title: "Confirm Delete Service?",
+    icon: "stash:question",
+    class: "destructive",
+    color: "#EF4444",
+    body: "Do you want to delete this service?",
+    sub: "Deleting this item is irreversible. Are you sure you want to continue?",
+    confirmButton: "Yes, Delete",
+    cancelButton: "Cancel",
+  };
 
+  successDialogConfig = {
+    icon: "solar:verified-check-outline",
+    body: "Delete service successfully.",
+    color: "#22C55E",
+  };
   const router = useRouter();
 
   useEffect(() => {
@@ -115,12 +136,25 @@ const MenuManagement: React.FC = () => {
       alert(`Cannot delete "${item.menu_name}" because it has ${item.children.length} child menu(s). Please delete all children first.`);
       return;
     }
-
-    if (confirm(`Are you sure you want to delete "${item.menu_name}"?`)) {
-      // Just mark the item as deleted, don't actually remove it yet
-      setDeletedItems(prev => new Set([...prev, item.id]));
-    }
+    setOpenModal(true);
   };
+
+  const handleConfirm = (item: MenuItem): void => {
+    setOpenSuccessModal(true);
+    setOpenModal(false);
+    setDeletedItems(prev => new Set([...prev, item.id]));
+  };
+  // const handleDelete = (item: MenuItem): void => {
+  //   if (item.children && item.children.length > 0) {
+  //     alert(`Cannot delete "${item.menu_name}" because it has ${item.children.length} child menu(s). Please delete all children first.`);
+  //     return;
+  //   }
+
+  //   if (confirm(`Are you sure you want to delete "${item.menu_name}"?`)) {
+  //     // Just mark the item as deleted, don't actually remove it yet
+  //     setDeletedItems(prev => new Set([...prev, item.id]));
+  //   }
+  // };
 
   // Check if item is ancestor of target
   const isAncestor = (itemId: number, targetId: number, items: MenuItem[]): boolean => {
@@ -440,21 +474,46 @@ const MenuManagement: React.FC = () => {
                   <Icon icon="hugeicons:pencil-edit-01" width="20" height="20" />
                 </Button>
                 <p className="p-1 text-gray-300">|</p>
-
-                <Button
-                  size="icon"
-                  onClick={e => {
-                    e.stopPropagation();
-                    handleDelete(item);
-                    setOpenModal(true);
-                  }}
-                  color="destructive"
-                  variant="soft"
-                  title={item.children && item.children.length > 0 ? "Cannot delete parent with children" : "Delete"}
-                  disabled={item.children && item.children.length > 0}
-                >
-                  <Icon icon="hugeicons:delete-02" width="20" height="20" />
-                </Button>
+                {item.children.length > 0 ? (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span>
+                          <Button
+                            size="icon"
+                            onClick={e => {
+                              e.stopPropagation();
+                              handleDelete(item);
+                              setOpenModal(true);
+                            }}
+                            color="destructive"
+                            variant="soft"
+                            disabled
+                          >
+                            <Icon icon="hugeicons:delete-02" width="20" height="20" />
+                          </Button>
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent color="destructive" side="top">
+                        <p>Delete children first</p>
+                        <TooltipArrow className="fill-destructive" />
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                ) : (
+                  <Button
+                    size="icon"
+                    onClick={e => {
+                      e.stopPropagation();
+                      handleDelete(item);
+                      setOpenModal(true);
+                    }}
+                    color="destructive"
+                    variant="soft"
+                  >
+                    <Icon icon="hugeicons:delete-02" width="20" height="20" />
+                  </Button>
+                )}
               </>
             )}
           </div>
@@ -479,7 +538,7 @@ const MenuManagement: React.FC = () => {
         {/* Children */}
         {hasChildren && isExpanded && (
           <div className="relative">
-            {item.children.map((child: MenuItem, index: number) => {
+            {item?.children?.map((child: MenuItem, index: number) => {
               const newParentLines = [...parentLines];
               if (level >= 0) {
                 newParentLines[level] = index < item.children.length - 1;
@@ -708,15 +767,17 @@ const MenuManagement: React.FC = () => {
 
   return (
     <div className="">
+      {openModal && <ConfirmDialog open={openModal} onOpenChange={setOpenModal} onConfirm={() => handleConfirm(item)} dialogConfig={confirmDialogConfig}></ConfirmDialog>}
+      {openSuccessModal && <SuccessDialog open={openSuccessModal} onOpenChange={setOpenSuccessModal} dialogConfig={successDialogConfig} />}
       {/* <div className="p-1 md:p-5 grid grid-cols-[auto_1fr_1fr_auto] gap-4 items-center text-default-900"> */}
       {/* <p className="">Status</p> */}
       {/* <div className=""> */}
       {/* <Select
-            value={currentStatusValue}
-            onValueChange={(newValue: string) => {
-              setStatusVal(newValue);
-            }}
-          > */}
+              value={currentStatusValue}
+              onValueChange={(newValue: string) => {
+                setStatusVal(newValue);
+              }}
+            > */}
       {/* <SelectTrigger> */}
       {/* <SelectValue placeholder="--All--" /> */}
       {/* </SelectTrigger> */}
@@ -732,36 +793,36 @@ const MenuManagement: React.FC = () => {
       {/* <InputGroup merged> */}
       {/* <InputGroupText><Icon icon="heroicons:magnifying-glass" /></InputGroupText> */}
       {/* <Input
-            type="text"
-            placeholder="Search.."
-            value={search}
-            onChange={search => {
-              setSearch(search.target.value);
-            }}
-          /> */}
+              type="text"
+              placeholder="Search.."
+              value={search}
+              onChange={search => {
+                setSearch(search.target.value);
+              }}
+            /> */}
       {/* </InputGroup> */}
       {/* <div className="space-x-4"> */}
       {/* <Button
-            variant="outline"
-            className="w-32"
-            onClick={() => {
-              fetchData();
-            }}
-          > */}
+              variant="outline"
+              className="w-32"
+              onClick={() => {
+                fetchData();
+              }}
+            > */}
       {/* <Icon icon="mingcute:search-line" width="24" height="24" />
-            Search
-          </Button>{" "} */}
+              Search
+            </Button>{" "} */}
       {/* 128px */}
       {/* <Button
-            variant="outline"
-            className="w-32"
-            onClick={() => {
-              handleClear();
-            }}
-          > */}
+              variant="outline"
+              className="w-32"
+              onClick={() => {
+                handleClear();
+              }}
+            > */}
       {/* <Icon icon="solar:refresh-line-duotone" width="24" height="24" />
-            Clear
-          </Button>{" "} */}
+              Clear
+            </Button>{" "} */}
       {/* </div> */}
       {/* </div> */}
       <div className="flex items-center gap-4">
@@ -778,8 +839,8 @@ const MenuManagement: React.FC = () => {
               Reset Changes
             </Button>
             {/* <Button onClick={exportJSON} variant="soft">
-              Export Changes
-            </Button> */}
+                Export Changes
+              </Button> */}
           </>
         )}
       </div>
