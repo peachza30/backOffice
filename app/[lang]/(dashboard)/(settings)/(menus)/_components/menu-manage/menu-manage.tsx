@@ -29,9 +29,11 @@ const MenuManagement: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [deletedItems, setDeletedItems] = useState<Set<number>>(new Set());
   const [openSuccessModal, setOpenSuccessModal] = useState(false);
+  const [openSuccessResetModal, setOpenSuccessResetModal] = useState(false);
   let deleteDialogConfig = {};
   let resetDialogConfig = {};
   let successDialogConfig = {};
+  let successResetDialogConfig = {};
   deleteDialogConfig = {
     title: "Confirm Delete Service?",
     icon: "stash:question",
@@ -57,6 +59,12 @@ const MenuManagement: React.FC = () => {
   successDialogConfig = {
     icon: "solar:verified-check-outline",
     body: "Delete service successfully.",
+    color: "#22C55E",
+  };
+
+  successResetDialogConfig = {
+    icon: "solar:verified-check-outline",
+    body: "Menu reset successfully.",
     color: "#22C55E",
   };
   const router = useRouter();
@@ -166,6 +174,7 @@ const MenuManagement: React.FC = () => {
     setMenusList(JSON.parse(JSON.stringify(originalMenus)));
     setDeletedItems(new Set());
     setOpenResetModal(false);
+    setOpenSuccessResetModal(true);
   };
   // const handleDelete = (item: MenuItem): void => {
   //   if (item.children && item.children.length > 0) {
@@ -804,6 +813,9 @@ const MenuManagement: React.FC = () => {
         />
       )}
       {openSuccessModal && <SuccessDialog open={openSuccessModal} onOpenChange={setOpenSuccessModal} dialogConfig={successDialogConfig} />}
+      {openSuccessResetModal && (
+        <SuccessDialog open={openSuccessResetModal} onOpenChange={setOpenSuccessResetModal} dialogConfig={successResetDialogConfig} />
+      )}
       {/* <div className="p-1 md:p-5 grid grid-cols-[auto_1fr_1fr_auto] gap-4 items-center text-default-900"> */}
       {/* <p className="">Status</p> */}
       {/* <div className=""> */}
