@@ -1,4 +1,5 @@
 "use client";
+import React, { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Icon } from "@iconify/react";
@@ -12,8 +13,8 @@ interface ConfirmDialogProps {
     class?: "primary" | "default" | "destructive" | "success" | "info" | "warning" | "secondary" | "dark";
     color?: string;
     size?: "sm" | "md" | "lg" | "xl";
-    body?: string;
-    sub?: string;
+    body?: ReactNode;
+    sub?: ReactNode;
     confirmButton?: string | "Confirm";
     cancelButton?: string | "Cancel";
   };
