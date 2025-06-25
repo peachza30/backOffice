@@ -418,17 +418,6 @@ const MenuManagement: React.FC = () => {
                   size="icon"
                   onClick={e => {
                     e.stopPropagation();
-                    handleEdit(item);
-                  }}
-                  color="warning"
-                  variant="soft"
-                >
-                  <Icon icon="hugeicons:pencil-edit-01" width="20" height="20" />
-                </Button>
-                <Button
-                  size="icon"
-                  onClick={e => {
-                    e.stopPropagation();
                     handleView(item);
                     setMode("view");
                     // router.push(`/manage-menus/${menus.id || 0}`);
@@ -438,6 +427,20 @@ const MenuManagement: React.FC = () => {
                 >
                   <Icon icon="fluent:eye-24-filled" width="20" height="20" />
                 </Button>
+                <p className="p-1 text-gray-300">|</p>
+                <Button
+                  size="icon"
+                  onClick={e => {
+                    e.stopPropagation();
+                    handleEdit(item);
+                  }}
+                  color="warning"
+                  variant="soft"
+                >
+                  <Icon icon="hugeicons:pencil-edit-01" width="20" height="20" />
+                </Button>
+                <p className="p-1 text-gray-300">|</p>
+
                 <Button
                   size="icon"
                   onClick={e => {

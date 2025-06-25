@@ -187,20 +187,7 @@ const columns: ColumnDef<RoleScope>[] = [
           {/* <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => navigator.clipboard.writeText(service.service_code)} title="Copy service code">
             <Copy className="h-4 w-4" />
           </Button> */}
-          {/* Edit Service */}
-          <Button
-            size="icon"
-            onClick={() => {
-              setMode("edit");
-              router.push(`/manage-role/${role.id}`);
-            }}
-            color="warning"
-            variant="soft"
-          >
-            <Icon icon="hugeicons:pencil-edit-01" width="24" height="24" />
-          </Button>
           {/* View Details */}
-          <p className="p-1 text-gray-300">|</p>
           <Button
             size="icon"
             onClick={() => {
@@ -212,6 +199,20 @@ const columns: ColumnDef<RoleScope>[] = [
           >
             <Icon icon="fluent:eye-24-filled" width="24" height="24" />
           </Button>
+          {/* Edit Service */}
+          <p className="p-1 text-gray-300">|</p>
+          <Button
+            size="icon"
+            onClick={() => {
+              setMode("edit");
+              router.push(`/manage-role/${role.id}`);
+            }}
+            color="warning"
+            variant="soft"
+          >
+            <Icon icon="hugeicons:pencil-edit-01" width="24" height="24" />
+          </Button>
+
           {/* Delete Service */}
           <p className="p-1 text-gray-300">|</p>
           <Card title="Icon Buttons">

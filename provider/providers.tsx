@@ -8,7 +8,7 @@ import { SonnToaster } from "@/components/ui/sonner";
 import { usePathname } from "next/navigation";
 
 // Use a generic sans-serif font to avoid network font downloads during build
-const inter = { className: "font-sans" } as const;
+const inter = { className: "Noto Sans Thai" } as const;
 const Providers = ({ children }: { children: React.ReactNode }) => {
   const { theme, radius } = useThemeStore();
   const location = usePathname();
