@@ -21,15 +21,23 @@ const MenuManagement: React.FC = () => {
   const [currentDropZone, setCurrentDropZone] = useState<DropZone | null>(null);
   const [expandedItems, setExpandedItems] = useState<Set<number>>(new Set());
   const [openModal, setOpenModal] = useState(false);
+  const [openSuccessModal, setOpenSuccessModal] = useState(false);
+  const [openResetModal, setOpenResetModal] = useState(false);
+  const [openSuccessResetModal, setOpenSuccessResetModal] = useState(false);
+  const [openSaveModal, setOpenSaveModal] = useState(false);
+  const [openSuccessSaveModal, setOpenSuccessSaveModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
   const [search, setSearch] = useState("");
   const [statusVal, setStatusVal] = useState("");
   const [fetchClear, setFetchClear] = useState(false);
   const [loading, setLoading] = useState(false);
   const [deletedItems, setDeletedItems] = useState<Set<number>>(new Set());
-  const [openSuccessModal, setOpenSuccessModal] = useState(false);
   let confirmDialogConfig = {};
   let successDialogConfig = {};
+  let resetDialogConfig = {};
+  let successResetDialogConfig = {};
+  let saveDialogConfig = {};
+  let successSaveDialogConfig = {};
   confirmDialogConfig = {
     title: "Confirm Delete Service?",
     icon: "stash:question",
@@ -40,7 +48,6 @@ const MenuManagement: React.FC = () => {
     confirmButton: "Yes, Delete",
     cancelButton: "Cancel",
   };
-
   resetDialogConfig = {
     title: "Reset Menu Changes?",
     icon: "stash:question",
@@ -51,7 +58,6 @@ const MenuManagement: React.FC = () => {
     confirmButton: "Yes, Reset",
     cancelButton: "Cancel",
   };
-
   successResetDialogConfig = {
     icon: "solar:verified-check-outline",
     body: "Reset reordering successfully.",
@@ -62,10 +68,19 @@ const MenuManagement: React.FC = () => {
     body: "Delete service successfully.",
     color: "#22C55E",
   };
-
-  successResetDialogConfig = {
+  saveDialogConfig = {
+    title: "Save Menu Changes?",
+    icon: "stash:question",
+    class: "primary",
+    color: "#2563EB",
+    body: "Do you want to save the changes made to the menu?",
+    sub: "You can edit or delete this menu later.",
+    confirmButton: "Yes, Save",
+    cancelButton: "Cancel",
+  };
+  successSaveDialogConfig = {
     icon: "solar:verified-check-outline",
-    body: "Menu reset successfully.",
+    body: "Save menu successfully.",
     color: "#22C55E",
   };
   const router = useRouter();
@@ -181,10 +196,13 @@ const MenuManagement: React.FC = () => {
     }
     setSelectedItem(null);
   };
-
+  const resetMenu = () => {
+    setOpenResetModal(true);
+  };
   const handleResetConfirm = (): void => {
     setMenusList(JSON.parse(JSON.stringify(originalMenus)));
     setDeletedItems(new Set());
+
     setOpenResetModal(false);
     setOpenSuccessResetModal(true);
   };
@@ -729,14 +747,7 @@ const MenuManagement: React.FC = () => {
     a.click();
     URL.revokeObjectURL(url);
   };
-
-  const resetMenu = () => {
-    if (confirm("Reset all changes and restore original menu structure?")) {
-      setMenusList(JSON.parse(JSON.stringify(originalMenus))); // Deep clone
-      setDeletedItems(new Set()); // Clear deleted items
-    }
-  };
-  const saveChanges = async () => {
+  const handleSaveConfirm = async (): Promise<void> => {
     // First, remove all deleted items from menusList
     const removeDeletedItems = (items: MenuItem[]): MenuItem[] => {
       return items.filter(item => {
@@ -765,34 +776,34 @@ const MenuManagement: React.FC = () => {
     const creates = changes.filter(c => c.is_new);
     const deletes = changes.filter(c => c.is_deleted);
 
-    let confirmMessage = `You are about to save ${changes.length} changes:\n\n`;
+    // let confirmMessage = `You are about to save ${changes.length} changes:\n\n`;
 
-    if (updates.length > 0) {
-      confirmMessage += `Updated (${updates.length}):\n`;
-      updates.forEach(item => {
-        confirmMessage += `  • ${item.menu_name}\n`;
-      });
-    }
+    // if (updates.length > 0) {
+    //   confirmMessage += `Updated (${updates.length}):\n`;
+    //   updates.forEach(item => {
+    //     confirmMessage += `  • ${item.menu_name}\n`;
+    //   });
+    // }
 
-    if (creates.length > 0) {
-      confirmMessage += `\nCreated (${creates.length}):\n`;
-      creates.forEach(item => {
-        confirmMessage += `  • ${item.menu_name}\n`;
-      });
-    }
+    // if (creates.length > 0) {
+    //   confirmMessage += `\nCreated (${creates.length}):\n`;
+    //   creates.forEach(item => {
+    //     confirmMessage += `  • ${item.menu_name}\n`;
+    //   });
+    // }
 
-    if (deletes.length > 0) {
-      confirmMessage += `\nDeleted (${deletes.length}):\n`;
-      deletes.forEach(item => {
-        confirmMessage += `  • ${item.menu_name}\n`;
-      });
-    }
+    // if (deletes.length > 0) {
+    //   confirmMessage += `\nDeleted (${deletes.length}):\n`;
+    //   deletes.forEach(item => {
+    //     confirmMessage += `  • ${item.menu_name}\n`;
+    //   });
+    // }
 
-    confirmMessage += "\nDo you want to continue?";
+    // confirmMessage += "\nDo you want to continue?";
 
-    if (!confirm(confirmMessage)) {
-      return;
-    }
+    // if (!confirm(confirmMessage)) {
+    //   return;
+    // }
 
     // Update the API calls
     await Promise.all(changes.map(item => updateMenu(item.id, item)));
@@ -804,6 +815,11 @@ const MenuManagement: React.FC = () => {
     setOriginalMenus(JSON.parse(JSON.stringify(finalMenusList)));
     setDeletedItems(new Set()); // Clear deleted items
     setIsReorderMode(false);
+    setOpenSaveModal(false);
+    setOpenSuccessSaveModal(true);
+  };
+  const saveChanges = () => {
+    setOpenSaveModal(true);
   };
 
   const handleClear = () => {
@@ -814,15 +830,12 @@ const MenuManagement: React.FC = () => {
 
   return (
     <div className="">
-      {openModal && (
-        <ConfirmDialog
-          open={openModal}
-          onOpenChange={setOpenModal}
-          onConfirm={handleConfirm}
-          dialogConfig={confirmDialogConfig}
-        />
-      )}
+      {openModal && <ConfirmDialog open={openModal} onOpenChange={setOpenModal} onConfirm={handleConfirm} dialogConfig={confirmDialogConfig} />}
       {openSuccessModal && <SuccessDialog open={openSuccessModal} onOpenChange={setOpenSuccessModal} dialogConfig={successDialogConfig} />}
+      {openResetModal && <ConfirmDialog open={openResetModal} onOpenChange={setOpenResetModal} onConfirm={handleResetConfirm} dialogConfig={resetDialogConfig} />}
+      {openSuccessResetModal && <SuccessDialog open={openSuccessResetModal} onOpenChange={setOpenSuccessResetModal} dialogConfig={successResetDialogConfig} />}
+      {openSaveModal && <ConfirmDialog open={openSaveModal} onOpenChange={setOpenSaveModal} onConfirm={handleSaveConfirm} dialogConfig={saveDialogConfig} />}
+      {openSuccessSaveModal && <SuccessDialog open={openSuccessSaveModal} onOpenChange={setOpenSuccessSaveModal} dialogConfig={successSaveDialogConfig} />}
       {/* <div className="p-1 md:p-5 grid grid-cols-[auto_1fr_1fr_auto] gap-4 items-center text-default-900"> */}
       {/* <p className="">Status</p> */}
       {/* <div className=""> */}
