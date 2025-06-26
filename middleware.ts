@@ -154,13 +154,14 @@ export async function middleware(request: NextRequest) {
     console.log('Token expired, attempting refresh...');
     try {
       const newToken = await refreshToken(token);
+      const response = NextResponse.next();
+
       if (newToken) {
         console.log('Token refreshed successfully');
         isLoggedIn = true;
         currentToken = newToken;
 
-        // Create response and set the new token cookie
-        const response = NextResponse.next();
+        // discard old token and set new cookie
         response.cookies.set(cookieName, newToken, {
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
@@ -169,7 +170,6 @@ export async function middleware(request: NextRequest) {
           path: '/',
         });
 
-        // Continue with the updated token
         console.log('Updated token in cookie');
 
         // Handle redirects for logged-in users
@@ -178,23 +178,51 @@ export async function middleware(request: NextRequest) {
           pathname === `/${locale}/forgot-password`) {
           const dashboardUrl = new URL(`/${locale}/dashboard`, request.url);
           console.log('Redirecting refreshed user to dashboard:', dashboardUrl.href);
-          return NextResponse.redirect(dashboardUrl);
+          const redirectRes = NextResponse.redirect(dashboardUrl);
+          redirectRes.cookies.set(cookieName, newToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: 60 * 60 * 24 * 7,
+            path: '/',
+          });
+          return redirectRes;
         }
 
-        // Redirect to dashboard if accessing root locale path
         if (pathname === `/${locale}`) {
           const dashboardUrl = new URL(`/${locale}/dashboard`, request.url);
-          return NextResponse.redirect(dashboardUrl);
+          const redirectRes = NextResponse.redirect(dashboardUrl);
+          redirectRes.cookies.set(cookieName, newToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: 60 * 60 * 24 * 7,
+            path: '/',
+          });
+          return redirectRes;
         }
 
         return response;
       } else {
         console.log('Token refresh failed');
+        response.cookies.delete(cookieName);
         isLoggedIn = false;
+        if (isProtectedPath(pathname, locale)) {
+          const loginUrl = new URL(`/${locale}/login`, request.url);
+          if (pathname !== `/${locale}`) {
+            loginUrl.searchParams.set('returnUrl', pathname);
+          }
+          const redirectRes = NextResponse.redirect(loginUrl);
+          redirectRes.cookies.delete(cookieName);
+          return redirectRes;
+        }
+        return response;
       }
     } catch (error) {
       console.error('Token refresh error:', error);
-      isLoggedIn = false;
+      const redirectRes = NextResponse.redirect(`/${locale}/login`);
+      redirectRes.cookies.delete(cookieName);
+      return redirectRes;
     }
   }
 
