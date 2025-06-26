@@ -22,13 +22,13 @@ export default async function RootLayout({ children, params: { lang } }: { child
  
   return (
     <html lang={lang}>
-      <AuthProvider>
+      {/* <AuthProvider> */}
         <TanstackProvider>
           <Providers>
             <DirectionProvider lang={lang}>{children}</DirectionProvider>
           </Providers>
         </TanstackProvider>
-      </AuthProvider>
+      {/* </AuthProvider> */}
     </html>
   );
 }

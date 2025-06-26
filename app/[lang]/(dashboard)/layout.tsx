@@ -1,6 +1,7 @@
 import DashBoardLayoutProvider from "@/provider/dashboard.layout.provider";
 import { getDictionary } from "@/app/dictionaries";
 import { cookies } from "next/headers";
+
 import { redirect } from "next/navigation";
 
 const layout = async ({ children, params: { lang } }: { children: React.ReactNode; params: { lang: any } }) => {

@@ -15,12 +15,12 @@ import { getMenu } from "@/config/menus";
 import { useMenuStore } from "@/store/menu/useMenuStore";
 const MobileSidebar = ({ className, trans, menusConfig }: { className?: string; trans: any, menusConfig: any }) => {
   const { sidebarBg, mobileMenu, setMobileMenu } = useSidebar();
-  const [activeSubmenu, setActiveSubmenu] = useState<number | null>(null);
-  const [activeMultiMenu, setMultiMenu] = useState<number | null>(null);
   // const { profile, fetchProfile } = useProfileStore();
   // const { menus } = useMenuStore();
   // const [menusConfig, setMenusConfig] = useState<any>(null);
   const menusList = menusConfig?.sidebarNav?.classic || [];
+  const [activeSubmenu, setActiveSubmenu] = useState<number | null>(null);
+  const [activeMultiMenu, setMultiMenu] = useState<number | null>(null);
   const { collapsed } = useSidebar();
 
 
