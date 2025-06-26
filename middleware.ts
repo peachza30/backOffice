@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { match } from '@formatjs/intl-localematcher';
 import Negotiator from 'negotiator';
-import { refresh } from "@/config/refresh-token";
+import { refreshToken } from "@/config/refresh-token";
 
 const locales = ['en', 'th'] as const;
 const defaultLocale = 'en';
@@ -52,22 +52,7 @@ function isJwtExpired(token: string): boolean {
   }
 }
 
-// Refresh token function - you'll need to implement this based on your API
-async function refreshToken(token: string): Promise<string | null> {
-  try {
-    const response = await refresh(token)
-
-    if (!response.ok) {
-      throw new Error('Token refresh failed');
-    }
-
-    const data = await response.json();
-    return data.accessToken || data.token || null;
-  } catch (error) {
-    console.error('Token refresh error:', error);
-    return null;
-  }
-}
+// refreshToken is imported from config/refresh-token.ts
 
 // Extract locale from pathname
 function getLocaleFromPathname(pathname: string): Locale | null {
