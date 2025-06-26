@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { match } from '@formatjs/intl-localematcher';
 import Negotiator from 'negotiator';
-import { refresh } from "@/config/refresh-token";
+import { refreshToken } from "@/config/refresh-token";
 
 const locales = ['en', 'th'] as const;
 const defaultLocale = 'en';
@@ -52,22 +52,7 @@ function isJwtExpired(token: string): boolean {
   }
 }
 
-// Refresh token function - you'll need to implement this based on your API
-async function refreshToken(token: string): Promise<string | null> {
-  try {
-    const response = await refresh(token)
-
-    if (!response.ok) {
-      throw new Error('Token refresh failed');
-    }
-
-    const data = await response.json();
-    return data.accessToken || data.token || null;
-  } catch (error) {
-    console.error('Token refresh error:', error);
-    return null;
-  }
-}
+// refreshToken is imported from config/refresh-token.ts
 
 // Extract locale from pathname
 function getLocaleFromPathname(pathname: string): Locale | null {
@@ -169,13 +154,14 @@ export async function middleware(request: NextRequest) {
     console.log('Token expired, attempting refresh...');
     try {
       const newToken = await refreshToken(token);
+      const response = NextResponse.next();
+
       if (newToken) {
         console.log('Token refreshed successfully');
         isLoggedIn = true;
         currentToken = newToken;
 
-        // Create response and set the new token cookie
-        const response = NextResponse.next();
+        // discard old token and set new cookie
         response.cookies.set(cookieName, newToken, {
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
@@ -184,7 +170,6 @@ export async function middleware(request: NextRequest) {
           path: '/',
         });
 
-        // Continue with the updated token
         console.log('Updated token in cookie');
 
         // Handle redirects for logged-in users
@@ -193,23 +178,51 @@ export async function middleware(request: NextRequest) {
           pathname === `/${locale}/forgot-password`) {
           const dashboardUrl = new URL(`/${locale}/dashboard`, request.url);
           console.log('Redirecting refreshed user to dashboard:', dashboardUrl.href);
-          return NextResponse.redirect(dashboardUrl);
+          const redirectRes = NextResponse.redirect(dashboardUrl);
+          redirectRes.cookies.set(cookieName, newToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: 60 * 60 * 24 * 7,
+            path: '/',
+          });
+          return redirectRes;
         }
 
-        // Redirect to dashboard if accessing root locale path
         if (pathname === `/${locale}`) {
           const dashboardUrl = new URL(`/${locale}/dashboard`, request.url);
-          return NextResponse.redirect(dashboardUrl);
+          const redirectRes = NextResponse.redirect(dashboardUrl);
+          redirectRes.cookies.set(cookieName, newToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: 60 * 60 * 24 * 7,
+            path: '/',
+          });
+          return redirectRes;
         }
 
         return response;
       } else {
         console.log('Token refresh failed');
+        response.cookies.delete(cookieName);
         isLoggedIn = false;
+        if (isProtectedPath(pathname, locale)) {
+          const loginUrl = new URL(`/${locale}/login`, request.url);
+          if (pathname !== `/${locale}`) {
+            loginUrl.searchParams.set('returnUrl', pathname);
+          }
+          const redirectRes = NextResponse.redirect(loginUrl);
+          redirectRes.cookies.delete(cookieName);
+          return redirectRes;
+        }
+        return response;
       }
     } catch (error) {
       console.error('Token refresh error:', error);
-      isLoggedIn = false;
+      const redirectRes = NextResponse.redirect(`/${locale}/login`);
+      redirectRes.cookies.delete(cookieName);
+      return redirectRes;
     }
   }
 

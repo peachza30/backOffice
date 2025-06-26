@@ -20,3 +20,16 @@ export async function refresh(authToken: string) {
     console.error('getAuthMe error:', error.message || error);
   }
 }
+
+export async function refreshToken(authToken: string): Promise<string | null> {
+  try {
+    const data = await refresh(authToken);
+    if (!data) {
+      return null;
+    }
+    return data.accessToken || data.token || null;
+  } catch (error: any) {
+    console.error('Token refresh error:', error.message || error);
+    return null;
+  }
+}
