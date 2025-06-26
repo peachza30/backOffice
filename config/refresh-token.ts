@@ -32,4 +32,5 @@ export async function refreshToken(authToken: string): Promise<string | null> {
     console.error('Token refresh error:', error.message || error);
     return null;
   }
+}
 
