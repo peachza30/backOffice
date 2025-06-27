@@ -151,62 +151,10 @@ export async function middleware(request: NextRequest) {
 
   // If token is expired, try to refresh it
   if (!isLoggedIn) {
-    console.log('Token expired, attempting refresh...');
-    try {
-      const newToken = await refreshToken(token);
-      const response = NextResponse.next();
-
-      if (newToken) {
-        console.log('Token refreshed successfully');
-        isLoggedIn = true;
-        currentToken = newToken;
-
-        // *** ลบการ set cookie ***
-        const redirectRes = NextResponse.redirect(dashboardUrl);
-          redirectRes.cookies.set(cookieName, newToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
-            maxAge: 60 * 60 * 24 * 7,
-            path: '/',
-          });
-
-        // Handle redirects for logged-in users
-        if (
-          pathname === `/${locale}/login` ||
-          pathname === `/${locale}/register` ||
-          pathname === `/${locale}/forgot-password`
-        ) {
-          const dashboardUrl = new URL(`/${locale}/dashboard`, request.url);
-          console.log('Redirecting refreshed user to dashboard:', dashboardUrl.href);
-          return NextResponse.redirect(dashboardUrl);
-        }
-
-        if (pathname === `/${locale}`) {
-          const dashboardUrl = new URL(`/${locale}/dashboard`, request.url);
-          return NextResponse.redirect(dashboardUrl);
-        }
-
-        return response;
-      } else {
-        console.log('Token refresh failed');
-        isLoggedIn = false;
-
-        if (isProtectedPath(pathname, locale)) {
-          const loginUrl = new URL(`/${locale}/login`, request.url);
-          if (pathname !== `/${locale}`) {
-            loginUrl.searchParams.set('returnUrl', pathname);
-          }
-          return NextResponse.redirect(loginUrl);
-        }
-
-        return response;
-      }
-    } catch (error) {
-      console.error('Token refresh error:', error);
-      // const redirectRes = NextResponse.redirect(`/${locale}/login`);
-      // return redirectRes;
-    }
+    console.log('Token expired, redirecting to /api/refresh-token');
+    const refreshUrl = new URL(`/api/refresh-token`, request.url);
+    refreshUrl.searchParams.set('returnUrl', pathname);
+    return NextResponse.redirect(refreshUrl);
   }
 
   // If still not logged in after refresh attempt, redirect to login for protected paths
