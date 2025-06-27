@@ -162,6 +162,14 @@ export async function middleware(request: NextRequest) {
         currentToken = newToken;
 
         // *** ลบการ set cookie ***
+        const redirectRes = NextResponse.redirect(dashboardUrl);
+          redirectRes.cookies.set(cookieName, newToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: 60 * 60 * 24 * 7,
+            path: '/',
+          });
 
         // Handle redirects for logged-in users
         if (
