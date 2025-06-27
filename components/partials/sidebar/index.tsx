@@ -49,8 +49,7 @@ const Sidebar = ({ trans }: { trans: string }) => {
 
   // Update menu config when profile is available (menus are already loaded at this point)
   useEffect(() => {
-    if (profile && menus) {
-      console.log("profile", profile);
+    if (profile && menus && !loading) {
       try {
         const newMenusConfig = getMenu(profile);
         setMenusConfig(newMenusConfig);
@@ -60,20 +59,19 @@ const Sidebar = ({ trans }: { trans: string }) => {
     }
   }, [profile, menus]); // Depend on both profile and menus
 
-  // console.log("menus", menus);
-  // console.log("profile", profile);
-
-  let selectedSidebar = null;
+  let selectedSidebar: JSX.Element | null = null;
 
   if (!isDesktop && (sidebarType === "popover" || sidebarType === "classic")) {
     selectedSidebar = <MobileSidebar trans={trans} menusConfig={menusConfig} />;
+  console.log("menusConfig", menusConfig);
+
   } else {
     const sidebarComponents: { [key: string]: JSX.Element } = {
       module: <ModuleSidebar trans={trans} menusConfig={menusConfig} />,
       popover: <PopoverSidebar trans={trans} menusConfig={menusConfig} />,
       classic: <ClassicSidebar trans={trans} menusConfig={menusConfig} />,
     };
-    selectedSidebar = sidebarComponents[sidebarType] || <ModuleSidebar trans={trans} />;
+    selectedSidebar = sidebarComponents[sidebarType] || <ModuleSidebar trans={trans} menusConfig={menusConfig} />;
   }
 
   return <div>{selectedSidebar}</div>;

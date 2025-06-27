@@ -17,7 +17,7 @@ export async function refresh(authToken: string) {
     const data = await res.json();
     return data;
   } catch (error: any) {
-    console.error('getAuthMe error:', error.message || error);
+    console.error('refresh token error:', error.message || error);
   }
 }
 
@@ -27,7 +27,7 @@ export async function refreshToken(authToken: string): Promise<string | null> {
     if (!data) {
       return null;
     }
-    return data.accessToken || data.token || null;
+    return data.accessToken || null;
   } catch (error: any) {
     console.error('Token refresh error:', error.message || error);
     return null;

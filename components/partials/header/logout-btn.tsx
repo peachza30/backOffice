@@ -9,12 +9,13 @@ export const LogoutBtn = () => {
       "token",
       "userId"
     ].filter(Boolean);
+      console.log("cookieNames", cookieNames);
 
     cookieNames.forEach(name => {
       document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; domain=.tfac.or.th`;
     });
 
-    window.location.href = "/login";
+    // window.location.href = "/login";
   };
 
   return (

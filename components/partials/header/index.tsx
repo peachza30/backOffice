@@ -31,7 +31,7 @@ const NavTools = ({ isDesktop, isMobile, sidebarType }: { isDesktop: boolean; is
       <NotificationMessage />
       <LogoutBtn />
       <div className="ltr:pl-2 rtl:pr-2">
-        <ProfileInfo />
+        {/* <ProfileInfo /> */}
       </div>
       {!isDesktop && sidebarType !== "module" && <MobileMenuHandler />}
     </div>
