@@ -175,7 +175,6 @@ const initialFormData: RoleFormData = {
   description: '',
   status: '',
   scope_id: null,
-  status_active: true,
   services: [],
   menus: [],
   created_at: '',
@@ -397,6 +396,7 @@ export const useRoleStore = create<RoleStore>()(
             // Then fetch the specific role
             const roleRes = await roles.findOne(roleId);
             const roleData: RoleScope = roleRes.data || roleRes;
+            console.log("roleData", roleData);
 
             // Update form data
             set((state) => ({
@@ -405,8 +405,9 @@ export const useRoleStore = create<RoleStore>()(
                 role_name: roleData.role_name,
                 description: roleData.description,
                 scope_id: roleData.scope_id,
+                status: roleData.status,
                 services: roleData.services,
-                menus: roleData.menus
+                menus: roleData.menus,
               },
               role: roleData,
               loading: false
@@ -518,7 +519,7 @@ export const useRoleStore = create<RoleStore>()(
           formData: { ...state.formData, scope_id: id }
         })),
         setStatusActive: (active) => set((state) => ({
-          formData: { ...state.formData, status_active: active }
+          formData: { ...state.formData, status: active }
         })),
         togglePermission: (category, itemId, permissionType) => {
 
@@ -652,6 +653,7 @@ export const useRoleStore = create<RoleStore>()(
         },
         submitRole: async () => {
           const state = get();
+          console.log("state", state);
 
           const services: ServicePermission[] = [];
           const menus: MenusPermission[] = [];
@@ -725,10 +727,10 @@ export const useRoleStore = create<RoleStore>()(
             role_name: state.formData.role_name || '',
             scope_id: state.formData.scope_id || 0,
             description: state.formData.description || '',
+            status: state.formData.status || '',
             services,
             menus
           };
-
 
           try {
             if (state.role?.id) {

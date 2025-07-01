@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { useUserStore } from "@/store/users/useUserStore";
 import { Icon } from "@iconify/react";
 import { Switch } from "@/components/ui/switch";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const RoleView = ({ mode, roleId }: { mode: string; roleId?: number }) => {
   const { formData, permissionItems, loading, error, role, roleScope, scopes, fetchScope, fetchRolesScope, setRoleName, setRoleDescription, setScopeId, setStatusActive, togglePermission, toggleAllPermissions, toggleExpanded, submitRole, resetForm, loadRoleData, initializeAll, setMode } = useRoleStore();
@@ -25,8 +26,10 @@ const RoleView = ({ mode, roleId }: { mode: string; roleId?: number }) => {
   const [modifiedBy, setModifiedBy] = useState("");
   const [showServices, setShowServices] = useState(true);
   const [showMenus, setShowMenus] = useState(true);
+  // console.log("formData", formData);
+  console.log("formData", formData);
+  console.log("userById", userById);
 
-  
   useEffect(() => {
     if (formData.updated_by) {
       fetchUserById(formData.updated_by);
@@ -91,6 +94,23 @@ const RoleView = ({ mode, roleId }: { mode: string; roleId?: number }) => {
   useEffect(() => {
     fetchRolesScope(formData.scope_id);
   }, [formData.scope_id, fetchRolesScope]);
+  const TableSkeleton = ({ rows = 5 }: { rows?: number }) => {
+    return (
+      <div className="divide-y divide-gray-100">
+        {[...Array(rows)].map((_, i) => (
+          <div key={i} className="grid grid-cols-[1fr_80px_80px_80px_80px_80px] py-3 px-4 bg-white">
+            <Skeleton className="h-4 w-3/4" />
+            <Skeleton className="h-4 w-6 mx-auto" />
+            <Skeleton className="h-4 w-6 mx-auto" />
+            <Skeleton className="h-4 w-6 mx-auto" />
+            <Skeleton className="h-4 w-6 mx-auto" />
+            <Skeleton className="h-4 w-6 mx-auto" />
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   // Helper function to check if item has any permission
   const hasAnyPermission = (item: PermissionItem): boolean => {
     const hasDirectPermission = item.permissions.can_create || item.permissions.can_read || item.permissions.can_update || item.permissions.can_delete;
@@ -165,14 +185,24 @@ const RoleView = ({ mode, roleId }: { mode: string; roleId?: number }) => {
   // Show loading state
   if (loading) {
     return (
-      <div className="p-6 bg-gray-50 min-h-screen">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex items-center justify-center py-12">
-            <div className="text-center">
-              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-blue-600" />
-              <p className="text-gray-600">{roleId ? "Loading role configuration..." : "Preparing role configuration..."}</p>
-            </div>
+      <div className="p-6 bg-white min-h-screen">
+        <div className="max-w-4xl mx-auto space-y-6">
+          <Skeleton className="h-8 w-32" /> {/* Title */}
+          <Skeleton className="h-6 w-64" /> {/* Subheading */}
+          <div className="space-y-4">
+            {[...Array(4)].map((_, idx) => (
+              <div key={idx} className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+                <Skeleton className="h-5 w-32" />
+                <Skeleton className="h-6 w-full md:col-span-2" />
+              </div>
+            ))}
           </div>
+          <div className="pt-8">
+            <Skeleton className="h-8 w-32" />
+          </div>
+        </div>
+        <div className="mt-10">
+          <TableSkeleton rows={6} />
         </div>
       </div>
     );
@@ -223,8 +253,8 @@ const RoleView = ({ mode, roleId }: { mode: string; roleId?: number }) => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center py-4 border-b border-gray-100">
               <Label className="text-sm font-medium text-gray-600 uppercase tracking-wide">STATUS ACTIVE</Label>
               <div className="md:col-span-2">
-                <Badge color={formData.status_active ? "success" : "warning"} variant="soft" className="uppercase">
-                  {formData.status_active ? "ACTIVE" : "INACTIVE"}
+                <Badge color={formData.status === "A" ? "success" : "warning"} variant="soft" className="uppercase">
+                  {formData.status === "A" ? "ACTIVE" : "INACTIVE"}
                 </Badge>
               </div>
             </div>
@@ -307,7 +337,7 @@ const RoleView = ({ mode, roleId }: { mode: string; roleId?: number }) => {
       </div>
 
       <div className="mt-10 flex gap-3">
-        <Button variant="outline" onClick={handleBack} color="secondary" disabled={loading} >
+        <Button variant="outline" onClick={handleBack} color="secondary" disabled={loading}>
           Back
         </Button>
       </div>

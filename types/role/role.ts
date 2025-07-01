@@ -74,7 +74,6 @@ interface RoleFormData {
   description?: string;
   status: string,
   scope_id: number | null;
-  status_active: boolean;
   services: ServicePermission[];
   menus: MenuItem[];
   created_at: string;
@@ -88,6 +87,7 @@ interface RoleAPIPayload {
   role_name: string;
   scope_id: number;
   description?: string;
+  status: string; // 'A' | 'I' 
   services: ServicePermission[];
   menus: MenusPermission[];
 }
@@ -129,7 +129,7 @@ interface RoleStore {
   setRoleName: (name: string) => void;
   setRoleDescription: (description: string) => void;
   setScopeId: (id: number) => void;
-  setStatusActive: (active: boolean) => void;
+  setStatusActive: (active: string) => void;
   togglePermission: (category: 'services' | 'menus', itemId: number | undefined, permissionType: string) => void;
   toggleAllPermissions: (category: 'services' | 'menus', itemId: number | undefined) => void;
   toggleExpanded: (category: 'services' | 'menus', itemId: number | undefined) => void;

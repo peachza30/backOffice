@@ -22,9 +22,15 @@ const RoleForm = ({ mode, roleId }: { mode: string; roleId?: number }) => {
 
   const { formData, permissionItems, loading, error, role, roleScope, scopes, fetchScope, fetchRolesScope, setRoleName, setRoleDescription, setScopeId, setStatusActive, togglePermission, toggleAllPermissions, toggleExpanded, submitRole, resetForm, loadRoleData, initializeAll, setMode } = useRoleStore();
   const { menus } = useMenuStore();
-
   const [showServices, setShowServices] = useState(true);
   const [showMenus, setShowMenus] = useState(true);
+
+  const [isActive, setIsActive] = useState(formData.status === "A");
+
+  const handleStatusChange = (checked: boolean) => {
+    setIsActive(checked);
+    setStatusActive(checked ? "A" : "I");
+  };
 
   useEffect(() => {
     fetchScope();
@@ -52,7 +58,6 @@ const RoleForm = ({ mode, roleId }: { mode: string; roleId?: number }) => {
         toast.error("Please select a scope");
         return;
       }
-
       // Check if at least one permission is selected
       const hasServicePermissions = permissionItems.services.some(service => hasAnyPermission(service));
       const hasMenuPermissions = permissionItems.menus.some(menu => hasAnyPermission(menu));
@@ -210,9 +215,9 @@ const RoleForm = ({ mode, roleId }: { mode: string; roleId?: number }) => {
               <label className="w-32 text-sm font-bold text-gray-700">Active Status</label>
               {roleId && (
                 <div className="p-1 flex items-center gap-5">
-                  <Switch id="statusSwitch" checked={formData.status_active} onCheckedChange={() => setStatusActive(!formData.status_active)} color="success" />
-                  <Badge color={formData.status_active ? "success" : "warning"} variant="soft">
-                    {formData.status_active ? "ACTIVE" : "INACTIVE"}
+                  <Switch id="statusSwitch" checked={formData.status === "A"} onCheckedChange={handleStatusChange} color="success" />
+                  <Badge color={formData.status === "A" ? "success" : "warning"} variant="soft">
+                    {formData.status === "A" ? "ACTIVE" : "INACTIVE"}
                   </Badge>
                 </div>
               )}
