@@ -33,14 +33,13 @@ const RoleForm = ({ mode, roleId }: { mode: string; roleId?: number }) => {
     } else {
       initializeAll();
     }
-  }, [roleId, loadRoleData, menus]);
+  }, [roleId]);
 
   useEffect(() => {
     if (formData.scope_id) {
       fetchRolesScope(formData.scope_id);
     }
-    console.log("formData", formData);
-  }, []);
+  }, [formData.scope_id]);
 
   const handleSubmit = async () => {
     try {

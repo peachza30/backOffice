@@ -450,9 +450,6 @@ export const useRoleStore = create<RoleStore>()(
               roleData.services,
               'service'
             );
-            console.log("Original services:", state.permissionItems.services);
-            console.log("Role menu permissions:", convertServiceItemsToPermissionItems(roleData.services));
-            console.log("Updated services result:", updatedServices);
 
             const updatedMenus = applyRolePermissionsToItems(
               state.permissionItems.menus,
@@ -524,7 +521,6 @@ export const useRoleStore = create<RoleStore>()(
           formData: { ...state.formData, status_active: active }
         })),
         togglePermission: (category, itemId, permissionType) => {
-          console.log(`🔧 Toggle Permission: Category=${category}, ItemId=${itemId}, Permission=${permissionType}`);
 
           set((state) => {
             const togglePermissionRecursively = (item: PermissionItem, shouldCheck: boolean): PermissionItem => {
@@ -549,8 +545,6 @@ export const useRoleStore = create<RoleStore>()(
               return items.map(item => {
                 if (item.id === itemId) {
                   const shouldCheck = !item.permissions[permissionType];
-                  console.log(`✅ Found target item: ${item.name} (ID: ${item.id})`);
-                  console.log(`   ${permissionType} before: ${item.permissions[permissionType]}, after: ${shouldCheck}`);
 
                   return togglePermissionRecursively(item, shouldCheck);
                 }
@@ -575,7 +569,6 @@ export const useRoleStore = create<RoleStore>()(
           });
         },
         toggleAllPermissions: (category, itemId) => {
-          console.log(`🔧 Toggle All Permissions: Category=${category}, ItemId=${itemId}`);
 
           set((state) => {
             const togglePermissionsRecursively = (item: PermissionItem, shouldCheck: boolean): PermissionItem => {
@@ -607,9 +600,6 @@ export const useRoleStore = create<RoleStore>()(
                     item.permissions.can_delete;
 
                   const shouldCheck = !allChecked;
-                  console.log(`✅ Found target item: ${item.name} (ID: ${item.id})`);
-                  console.log(`   All currently checked: ${allChecked}`);
-                  console.log(`   Will set all to: ${shouldCheck}`);
 
                   return togglePermissionsRecursively(item, shouldCheck);
                 }
@@ -686,7 +676,6 @@ export const useRoleStore = create<RoleStore>()(
             currentItems.forEach(item => {
               const original = findOriginalById(item.id, originalItems);
               if (!original) {
-                // console.log(`[${isService ? 'Service' : 'Menu'}] ID ${item.id} (${item.name}): no original found — assuming new`);
                 collector(item, isService);
               } else {
                 const changedFields = [];
@@ -697,7 +686,6 @@ export const useRoleStore = create<RoleStore>()(
                 if (item.permissions.can_delete !== original.permissions.can_delete) changedFields.push("can_delete");
 
                 if (changedFields.length > 0) {
-                  console.log(`[${isService ? 'Service' : 'Menu'}] ID ${item.id} (${item.name}): changed fields: ${changedFields.join(", ")}`);
                   collector(item, isService);
                 }
               }
@@ -741,9 +729,6 @@ export const useRoleStore = create<RoleStore>()(
             menus
           };
 
-          console.log("Final payload (only changed):", payload);
-          console.log("state", state);
-          console.log("payload", payload);
 
           try {
             if (state.role?.id) {
@@ -778,7 +763,6 @@ const applyRolePermissionsToItems = (
   type: 'service' | 'menu'
 ): PermissionItem[] => {
   const permissionMap = new Map<number, any>();
-  console.log("permissionMap", permissionMap);
 
   rolePermissions.forEach(perm => {
     const key = type === 'service'

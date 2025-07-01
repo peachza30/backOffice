@@ -28,12 +28,10 @@ const RoleView = ({ mode, roleId }: { mode: string; roleId?: number }) => {
 
   
   useEffect(() => {
-    if (formData) {
-      fetchUserById(formData.updated_by ?? 0); // or some other default value
+    if (formData.updated_by) {
+      fetchUserById(formData.updated_by);
     }
-    console.log("userById", userById);
-
-  }, []);
+  }, [formData.updated_by, fetchUserById]);
 
   useEffect(() => {
     if (userById) {
@@ -48,35 +46,31 @@ const RoleView = ({ mode, roleId }: { mode: string; roleId?: number }) => {
           }
         }
       };
-      console.log("userById", userById);
 
       fetchUserData();
 
-      if (userById) {
-        const updatedAt = userById?.updated_at ?? "";
-        console.log("updatedAt", updatedAt);
-        const isValidDate = updatedAt && !isNaN(Date.parse(updatedAt));
-        const firstName = userById?.first_name ?? "";
-        const lastName = userById?.last_name ?? "";
-        const userName = firstName && lastName ? `${firstName}.${lastName.slice(0, 2)}` : "Unknown User";
+      const updatedAt = userById?.updated_at ?? "";
+      const isValidDate = updatedAt && !isNaN(Date.parse(updatedAt));
+      const firstName = userById?.first_name ?? "";
+      const lastName = userById?.last_name ?? "";
+      const userName = firstName && lastName ? `${firstName}.${lastName.slice(0, 2)}` : "Unknown User";
 
-        setModifiedBy(userName || "");
-        setLastModified(
-          isValidDate
-            ? new Intl.DateTimeFormat("th-TH", {
-                year: "numeric",
-                month: "numeric",
-                day: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-                second: "2-digit",
-                hour12: false,
-              }).format(new Date(updatedAt))
-            : "-"
-        );
-      }
+      setModifiedBy(userName || "");
+      setLastModified(
+        isValidDate
+          ? new Intl.DateTimeFormat("th-TH", {
+              year: "numeric",
+              month: "numeric",
+              day: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+              second: "2-digit",
+              hour12: false,
+            }).format(new Date(updatedAt))
+          : "-"
+      );
     }
-  }, []);
+  }, [userById, fetchUserByUpdatedId]);
 
   useEffect(() => {
     (async () => {
@@ -87,7 +81,7 @@ const RoleView = ({ mode, roleId }: { mode: string; roleId?: number }) => {
         await initializeAll();
       }
     })();
-  }, [roleId, loadRoleData]);
+  }, [roleId]);
 
   const handleBack = () => {
     resetForm();
@@ -97,7 +91,6 @@ const RoleView = ({ mode, roleId }: { mode: string; roleId?: number }) => {
   useEffect(() => {
     fetchRolesScope(formData.scope_id);
   }, [formData.scope_id, fetchRolesScope]);
-  console.log("roleScope", roleScope);
   // Helper function to check if item has any permission
   const hasAnyPermission = (item: PermissionItem): boolean => {
     const hasDirectPermission = item.permissions.can_create || item.permissions.can_read || item.permissions.can_update || item.permissions.can_delete;
