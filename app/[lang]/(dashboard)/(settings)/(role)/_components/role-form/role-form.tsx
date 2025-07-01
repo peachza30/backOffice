@@ -14,6 +14,8 @@ import { Badge } from "@/components/ui/badge";
 import { ChevronDown, ChevronRight, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useMenuStore } from "@/store/menu/useMenuStore";
+import { Icon } from "@iconify/react";
+import { Switch } from "@/components/ui/switch";
 
 const RoleForm = ({ mode, roleId }: { mode: string; roleId?: number }) => {
   const router = useRouter();
@@ -23,7 +25,7 @@ const RoleForm = ({ mode, roleId }: { mode: string; roleId?: number }) => {
 
   const [showServices, setShowServices] = useState(true);
   const [showMenus, setShowMenus] = useState(true);
-  // Load role data if in edit mode
+
   useEffect(() => {
     fetchScope();
     if (roleId) {
@@ -78,9 +80,7 @@ const RoleForm = ({ mode, roleId }: { mode: string; roleId?: number }) => {
   // Helper function to check if item has any permission
   const hasAnyPermission = (item: PermissionItem): boolean => {
     const hasDirectPermission = item.permissions.can_create || item.permissions.can_read || item.permissions.can_update || item.permissions.can_delete;
-
     const hasChildPermission = item.children?.some(child => hasAnyPermission(child)) || false;
-
     return hasDirectPermission || hasChildPermission;
   };
 
@@ -92,16 +92,32 @@ const RoleForm = ({ mode, roleId }: { mode: string; roleId?: number }) => {
     const hasChildren = item.children && item.children.length > 0;
     const isExpanded = item.isExpanded;
 
+    const getPaddingClass = (level: number) => {
+      const paddingLevels = ["", "pl-10", "pl-20", "pl-30", "pl-40", "pl-50", "pl-60", "pl-70", "pl-80"];
+      return paddingLevels[level] || "";
+    };
+
+    const getLineLeft = (level: number) => {
+      const basePadding = level * 23;
+      return `${basePadding}px`;
+    };
+
     return (
       <div key={item.id} className="w-full">
-        <div className={`grid grid-cols-6 gap-4 py-3 px-4 border-b border-gray-100 hover:bg-gray-50/50 transition-colors ${level > 0 ? "pl-10" : ""}`}>
+        <div className={`relative grid grid-cols-[1fr_80px_80px_80px_80px_80px] py-3 px-4 border-b border-gray-100 hover:bg-gray-50/50 transition-colors ${getPaddingClass(level)}`}>
+          {level > 0 && <div className="absolute top-0 bottom-0 border-2 border-blue-100/50" style={{ left: getLineLeft(level) }} />}
           <div className="flex items-center gap-2">
+            <span className={`text-sm ${level > 0 ? "text-gray-600" : "text-gray-700"}`}>
+              <Icon icon={item.icon} />
+            </span>
+            <span className={`text-sm ${level > 0 ? "text-gray-600" : "text-gray-700"}`}>
+              <b>{item.name}</b>
+            </span>
             {hasChildren && (
-              <button onClick={() => toggleExpanded(category, item.id)} className="p-0.5 hover:bg-gray-200 rounded transition-colors" type="button">
+              <button onClick={() => toggleExpanded(category, item.id)} className="p-1 hover:bg-gray-200 rounded transition-colors" type="button">
                 {isExpanded ? <ChevronDown className="h-4 w-4 text-gray-500" /> : <ChevronRight className="h-4 w-4 text-gray-500" />}
               </button>
             )}
-            <span className={`text-sm ${level > 0 ? "text-gray-600" : "text-gray-700"}`}>{item.name}</span>
             {hasAnyChecked && (
               <Badge variant="soft" color="default" className="text-xs bg-blue-100 text-blue-700">
                 Active
@@ -109,63 +125,23 @@ const RoleForm = ({ mode, roleId }: { mode: string; roleId?: number }) => {
             )}
           </div>
 
+          {/* Columns 2–6: Checkboxes centered */}
           <div className="flex items-center justify-center">
-            <Checkbox
-              checked={allChecked}
-              onCheckedChange={() => {
-                console.log(`Toggling all permissions for ${item.name} (ID: ${item.id})`);
-                toggleAllPermissions(category, item.id);
-              }}
-              className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 border-gray-300"
-            />
+            <Checkbox size="sm" checked={allChecked} onCheckedChange={() => toggleAllPermissions(category, item.id)} />
           </div>
-
           <div className="flex items-center justify-center">
-            <Checkbox
-              checked={item.permissions.can_read}
-              onCheckedChange={() => {
-                console.log(`Toggling READ for ${item.name} (ID: ${item.id}) in category: ${category}`);
-                console.log(`Current value: ${item.permissions.can_read}`);
-                togglePermission(category, item.id, "can_read");
-              }}
-              className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 border-gray-300"
-            />
+            <Checkbox size="sm" checked={item.permissions.can_read} onCheckedChange={() => togglePermission(category, item.id, "can_read")} />
           </div>
-
           <div className="flex items-center justify-center">
-            <Checkbox
-              checked={item.permissions.can_create}
-              onCheckedChange={() => {
-                console.log(`Toggling CREATE for ${item.name} (ID: ${item.id}) in category: ${category}`);
-                togglePermission(category, item.id, "can_create");
-              }}
-              className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 border-gray-300"
-            />
+            <Checkbox size="sm" checked={item.permissions.can_create} onCheckedChange={() => togglePermission(category, item.id, "can_create")} />
           </div>
-
           <div className="flex items-center justify-center">
-            <Checkbox
-              checked={item.permissions.can_update}
-              onCheckedChange={() => {
-                console.log(`Toggling UPDATE for ${item.name} (ID: ${item.id}) in category: ${category}`);
-                togglePermission(category, item.id, "can_update");
-              }}
-              className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 border-gray-300"
-            />
+            <Checkbox size="sm" checked={item.permissions.can_update} onCheckedChange={() => togglePermission(category, item.id, "can_update")} />
           </div>
-
           <div className="flex items-center justify-center">
-            <Checkbox
-              checked={item.permissions.can_delete}
-              onCheckedChange={() => {
-                console.log(`Toggling DELETE for ${item.name} (ID: ${item.id}) in category: ${category}`);
-                togglePermission(category, item.id, "can_delete");
-              }}
-              className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 border-gray-300"
-            />
+            <Checkbox size="sm" checked={item.permissions.can_delete} onCheckedChange={() => togglePermission(category, item.id, "can_delete")} />
           </div>
         </div>
-
         {hasChildren && isExpanded && <div className="bg-gray-50/30">{item.children!.map(child => renderPermissionItem(child, category, level + 1))}</div>}
       </div>
     );
@@ -195,26 +171,29 @@ const RoleForm = ({ mode, roleId }: { mode: string; roleId?: number }) => {
       <div className="flex flex-col h-full">
         <CardContent className="pt-1">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <Label htmlFor="role-name" className="text-xs font-medium text-gray-600 uppercase tracking-wider">
-                Role Name <span className="text-red-500">*</span>
-              </Label>
-              <Input id="role-name" placeholder="Please enter role name" value={formData.role_name || ""} onChange={e => setRoleName(e.target.value)} className="h-10 border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all" />
+            {/* Role Name */}
+            <div className="flex items-center gap-4">
+              <label htmlFor="role-name" className="w-32 text-sm font-bold text-gray-700">
+                Role Name<span className="text-red-500 ml-1">*</span>
+              </label>
+              <Input id="role-name" placeholder="Please enter role name" value={formData.role_name || ""} onChange={e => setRoleName(e.target.value)} className="h-10 flex-1 border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500" />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="role-description" className="text-xs font-medium text-gray-600 uppercase tracking-wider">
-                Role Description
-              </Label>
-              <Input id="role-description" placeholder="Please enter role description" value={formData.role_description || ""} onChange={e => setRoleDescription(e.target.value)} className="h-10 border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all" />
+            {/* Role Description */}
+            <div className="flex items-center gap-4">
+              <label htmlFor="role-description" className="w-32 text-sm font-bold text-gray-700">
+                Description
+              </label>
+              <Input id="role-description" placeholder="Please enter role description" value={formData.description || ""} onChange={e => setRoleDescription(e.target.value)} className="h-10 flex-1 border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500" />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="scope" className="text-xs font-medium text-gray-600 uppercase tracking-wider">
-                Scope <span className="text-red-500">*</span>
-              </Label>
+            {/* Scope */}
+            <div className="flex items-center gap-4">
+              <label htmlFor="scope" className="w-32 text-sm font-bold text-gray-700">
+                Scope<span className="text-red-500 ml-1">*</span>
+              </label>
               <Select value={roleId && formData.scope_id != null ? formData.scope_id.toString() : undefined} onValueChange={value => setScopeId(parseInt(value))}>
-                <SelectTrigger className="h-10 border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all ">
+                <SelectTrigger className="h-10 flex-1 border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
                   <SelectValue placeholder="Please select scope" />
                 </SelectTrigger>
                 <SelectContent>
@@ -227,25 +206,41 @@ const RoleForm = ({ mode, roleId }: { mode: string; roleId?: number }) => {
               </Select>
             </div>
 
-            <div className="space-y-2">
-              <Label className="text-xs font-medium text-gray-600 uppercase tracking-wider">Status Active</Label>
-              <div className="pt-2">
-                <button onClick={() => setStatusActive(!formData.status_active)} className={`px-3 py-1 text-xs font-medium rounded-full transition-all ${formData.status_active ? "bg-green-100 text-green-700 hover:bg-green-200" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`} type="button">
-                  {formData.status_active ? "ACTIVE" : "INACTIVE"}
-                </button>
-              </div>
+            {/* Status Active */}
+            <div className="flex items-center gap-4">
+              <label className="w-32 text-sm font-bold text-gray-700">Active Status</label>
+              {roleId && (
+                <div className="p-1 flex items-center gap-5">
+                  <Switch id="statusSwitch" checked={formData.status_active} onCheckedChange={() => setStatusActive(!formData.status_active)} color="success" />
+                  <Badge color={formData.status_active ? "success" : "warning"} variant="soft">
+                    {formData.status_active ? "ACTIVE" : "INACTIVE"}
+                  </Badge>
+                </div>
+              )}
+              {!roleId && (
+                <Badge variant="soft" color="success" className="text-xs">
+                  Active
+                </Badge>
+              )}
+
+              {/* <button onClick={() => setStatusActive(!formData.status_active)} className={`px-3 py-1 text-xs font-medium rounded-full transition-all ${formData.status_active ? "bg-green-100 text-green-700 hover:bg-green-200" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`} type="button">
+                {formData.status_active ? "ACTIVE" : "INACTIVE"}
+              </button> */}
             </div>
           </div>
         </CardContent>
       </div>
-      <Card className="shadow-sm border border-gray-200 bg-white">
+      <div className="">
         {/* <CardHeader className="pb-4 border-b border-gray-100">
           <CardTitle className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Set Permission</CardTitle>
           <p className="text-sm text-gray-500 mt-1">Configure permissions for services and menu access</p>
         </CardHeader> */}
-        <CardContent className="p-0">
+        <div className="border-t-2 border-blue-100/75">
+          <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wider py-5">SET PERMISSION</h3>
+        </div>
+        <div className="p-0">
           <div className="bg-blue-50 border-b border-gray-200">
-            <div className="grid grid-cols-6 gap-4 py-3 px-4">
+            <div className="grid grid-cols-[1fr_80px_80px_80px_80px_80px] py-3 px-4 bg-blue-50 border-b border-gray-200">
               <div className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Role Permission</div>
               <div className="text-xs font-semibold text-gray-600 text-center uppercase tracking-wider">All</div>
               <div className="text-xs font-semibold text-gray-600 text-center uppercase tracking-wider">Read</div>
@@ -254,38 +249,35 @@ const RoleForm = ({ mode, roleId }: { mode: string; roleId?: number }) => {
               <div className="text-xs font-semibold text-gray-600 text-center uppercase tracking-wider">Delete</div>
             </div>
           </div>
-
           <div>
             {/* Services Section */}
             {permissionItems.services.length > 0 && (
               <>
-                <div className="bg-gray-50/60 px-4 py-2 border-b border-gray-100 flex items-center justify-between">
-                  <div className="flex items-center">
-                  <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Services ({permissionItems.services.length})</h3>
+                <div className="bg-gray-50/60 px-4 py-2 border-b border-gray-100 flex items-center justify-between ">
+                  <div className="flex items-center ">
+                    <h3 className="text-xs font-bold text-gray-600 uppercase tracking-wider">Services ({permissionItems.services.length})</h3>
                     <button onClick={() => setShowServices(!showServices)} className="ml-2 p-0.5 rounded transition-colors" type="button">
                       {showServices ? <ChevronDown className="h-4 w-4 text-gray-500" /> : <ChevronRight className="h-4 w-4 text-gray-500" />}
-                  </button>
-                </div>
+                    </button>
                   </div>
-                {showServices && <div className="divide-y divide-gray-100">{permissionItems.services.map(item => renderPermissionItem(item, "services"))}</div>}
+                </div>
+                {showServices && <div className="relative divide-y divide-gray-100 pl-5 before:absolute before:top-0 before:bottom-0 before:left-4 before:border-2 before:border-blue-100/50">{permissionItems.services.map(item => renderPermissionItem(item, "services"))}</div>}
               </>
             )}
-
             {/* Menus Section */}
             {permissionItems.menus.length > 0 && (
               <>
-                <div className="bg-gray-50/60 px-4 py-2 border-y border-gray-100 mt-4 flex items-center justify-between">
+                <div className="bg-gray-50/60 px-4 py-2 border-y border-gray-100  flex items-center justify-between">
                   <div className="flex items-center">
-                  <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Menu ({permissionItems.menus.length})</h3>
+                    <h3 className="text-xs font-bold text-gray-600 uppercase tracking-wider ">Menu ({permissionItems.menus.length})</h3>
                     <button onClick={() => setShowMenus(!showMenus)} className="ml-2 p-0.5  hover:bg-gray-200 rounded transition-colors" type="button">
                       {showMenus ? <ChevronDown className="h-4 w-4 text-gray-500" /> : <ChevronRight className="h-4 w-4 text-gray-500" />}
-                  </button>
-                </div>
+                    </button>
                   </div>
-                {showMenus && <div className="divide-y divide-gray-100">{permissionItems.menus.map(item => renderPermissionItem(item, "menus"))}</div>}
+                </div>
+                {showMenus && <div className="relative divide-y divide-gray-100 pl-5 before:absolute before:top-0 before:bottom-0 before:left-4 before:border-2 before:border-blue-100/50">{permissionItems.menus.map(item => renderPermissionItem(item, "menus"))}</div>}
               </>
             )}
-
             {/* Empty State */}
             {permissionItems.services.length === 0 && permissionItems.menus.length === 0 && (
               <div className="py-12 text-center">
@@ -294,18 +286,18 @@ const RoleForm = ({ mode, roleId }: { mode: string; roleId?: number }) => {
               </div>
             )}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       <div className="mt-6 flex gap-3">
         <Button onClick={handleSubmit} color="primary" disabled={loading} className="px-6">
           {loading ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin mr-2" />
-              {roleId ? "Updating..." : "Creating..."}
+              {roleId ? "Saving..." : "Creating..."}
             </>
           ) : roleId ? (
-            "Update"
+            "Save"
           ) : (
             "Create"
           )}

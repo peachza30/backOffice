@@ -23,32 +23,27 @@ function getLocale(request: NextRequest): Locale {
   }
 }
 
+type TokenStatus = 'valid' | 'expired' | 'missing';
+
 // Decode and check if JWT token is expired
-function isJwtExpired(token: string): boolean {
-  if (!token || typeof token !== 'string') return true;
+function getTokenStatus(token: string): TokenStatus {
+  if (!token || typeof token !== 'string') return 'missing';
 
   try {
     const parts = token.split('.');
-    if (parts.length !== 3) return true;
+    if (parts.length !== 3) return 'expired';
 
     const payloadBase64 = parts[1];
     const payload = JSON.parse(Buffer.from(payloadBase64, 'base64').toString());
 
-    console.log("Token payload:", {
-      exp: payload.exp,
-      iat: payload.iat,
-      userId: payload.sub || payload.userId
-    });
-
-    if (!payload.exp || typeof payload.exp !== 'number') return true;
+    if (!payload.exp || typeof payload.exp !== 'number') return 'expired';
 
     const now = Math.floor(Date.now() / 1000);
     const buffer = 30; // 30 second buffer for clock skew
 
-    return payload.exp < (now + buffer);
-  } catch (err) {
-    console.error('JWT validation error:', err);
-    return true;
+    return payload.exp < (now + buffer) ? 'expired' : 'valid';
+  } catch {
+    return 'expired';
   }
 }
 
@@ -107,13 +102,10 @@ export async function middleware(request: NextRequest) {
   const cookieName = process.env.NEXT_PUBLIC_COOKIES_NAME || '';
   const cookie = request.cookies.get(cookieName);
   const token = cookie?.value || '';
-  console.log("token", token);
 
   console.log('Middleware - Path:', pathname, 'Has Token:', !!token);
 
   const locale = getLocaleFromPathname(pathname);
-  console.log("locale", locale);
-
 
   // Handle missing locale - redirect to localized URL
   if (!locale) {
@@ -146,11 +138,11 @@ export async function middleware(request: NextRequest) {
   }
 
   // Token exists - check if it's expired and try to refresh
-  let isLoggedIn = !isJwtExpired(token);
-  let currentToken = token;
-
+  let tokenStatus = getTokenStatus(token);
+  let isLoggedIn = tokenStatus === 'valid';
+  
   // If token is expired, try to refresh it
-  if (!isLoggedIn) {
+  if (tokenStatus !== 'valid') {
     console.log('Token expired, redirecting to /api/refresh-token');
     const refreshUrl = new URL(`/api/refresh-token`, request.url);
     refreshUrl.searchParams.set('returnUrl', pathname);

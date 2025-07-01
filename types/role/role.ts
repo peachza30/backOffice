@@ -57,6 +57,7 @@ interface MenusPermission {
 interface PermissionItem {
   id?: number;
   name: string;
+  icon: string;
   permissions: {
     can_create: boolean;
     can_read: boolean;
@@ -86,6 +87,7 @@ interface RoleFormData {
 interface RoleAPIPayload {
   role_name: string;
   scope_id: number;
+  description?: string;
   services: ServicePermission[];
   menus: MenusPermission[];
 }
@@ -128,9 +130,9 @@ interface RoleStore {
   setRoleDescription: (description: string) => void;
   setScopeId: (id: number) => void;
   setStatusActive: (active: boolean) => void;
-  togglePermission: (category: 'services' | 'menus', itemId: number, permissionType: string) => void;
-  toggleAllPermissions: (category: 'services' | 'menus', itemId: number) => void;
-  toggleExpanded: (category: 'services' | 'menus', itemId: number) => void;
+  togglePermission: (category: 'services' | 'menus', itemId: number | undefined, permissionType: string) => void;
+  toggleAllPermissions: (category: 'services' | 'menus', itemId: number | undefined) => void;
+  toggleExpanded: (category: 'services' | 'menus', itemId: number | undefined) => void;
   submitRole: () => Promise<void>;
   resetForm: () => void;
   getMenuConfig: () => MenuItemProps[];

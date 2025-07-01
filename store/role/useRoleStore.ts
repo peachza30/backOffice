@@ -87,6 +87,7 @@ const mapMenusToPermissionItems = (menus: ApiMenu[]): PermissionItem[] => {
     return menuItems.map(menu => ({
       id: menu.id,
       name: menu.menu_name,
+      icon: menu.icon || '', // Ensure icon is included
       permissions: {
         can_create: false, // Start with false for new role creation
         can_read: false,
@@ -172,6 +173,7 @@ const initialFormData: RoleFormData = {
   role_id: null,
   role_name: '',
   description: '',
+  status: '',
   scope_id: null,
   status_active: true,
   services: [],
@@ -223,8 +225,6 @@ export const useRoleStore = create<RoleStore>()(
         },
         fetchRolesScope: async (scope) => {
           const { roleScopes } = get();
-          console.log("scope", scope);
-          console.log("roleScopes", roleScopes);
           if (roleScopes[scope]) return;
           set({ loading: true, error: null });
           try {
@@ -403,6 +403,7 @@ export const useRoleStore = create<RoleStore>()(
               formData: {
                 ...state.formData,
                 role_name: roleData.role_name,
+                description: roleData.description,
                 scope_id: roleData.scope_id,
                 services: roleData.services,
                 menus: roleData.menus
@@ -514,7 +515,7 @@ export const useRoleStore = create<RoleStore>()(
           formData: { ...state.formData, role_name: name }
         })),
         setRoleDescription: (description) => set((state) => ({
-          formData: { ...state.formData, role_description: description }
+          formData: { ...state.formData, description: description }
         })),
         setScopeId: (id) => set((state) => ({
           formData: { ...state.formData, scope_id: id }
@@ -735,6 +736,7 @@ export const useRoleStore = create<RoleStore>()(
           const payload: RoleAPIPayload = {
             role_name: state.formData.role_name || '',
             scope_id: state.formData.scope_id || 0,
+            description: state.formData.description || '',
             services,
             menus
           };
