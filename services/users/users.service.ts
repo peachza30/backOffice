@@ -1,4 +1,4 @@
-import httpClient from '@/config/axios.config';
+import httpClient from '@/config/axios.auth';
 
 export const findAll = async (params: FetchParams) => {
   const query = new URLSearchParams({

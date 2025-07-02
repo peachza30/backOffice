@@ -1,4 +1,4 @@
-import { api } from "@/config/axios.config";
+import { api } from "@/config/axios.auth";
 import { type User } from "@/app/api/user/data";
 export const registerUser = async (data: User) => {
   try {

@@ -1,4 +1,4 @@
-import { api } from "@/config/axios.config";
+import { api } from "@/config/axios.auth";
 
 export const getEvents = async () => {
   try {

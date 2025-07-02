@@ -6,20 +6,32 @@ import { Toaster as ReactToaster } from "@/components/ui/toaster";
 import { Toaster } from "react-hot-toast";
 import { SonnToaster } from "@/components/ui/sonner";
 import { usePathname } from "next/navigation";
-import { Noto_Sans_Thai } from "next/font/google";
+import localFont from "next/font/local";
 // Use a generic sans-serif font to avoid network font downloads during build
-const notoSansThai = Noto_Sans_Thai({
-  subsets: ["thai", "latin"],
-  weight: ["400", "700"],
-  display: "swap",
+export const NotoSansThai = localFont({
+  src: [
+    {
+      path: "../public/fonts/NotoSansThai/NotoSansThai-Regular.woff2",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/NotoSansThai/NotoSansThai-Bold.woff2",
+      weight: "700",
+      style: "normal",
+    },
+  ],
+  variable: "--font-noto-sans-thai", // optional if using CSS variables
+  display: "swap", // optional
 });
+
 const Providers = ({ children }: { children: React.ReactNode }) => {
   const { theme, radius } = useThemeStore();
   const location = usePathname();
 
   if (location === "/") {
     return (
-      <body className={cn("dash-tail-app ", notoSansThai.className)}>
+      <body className={cn("dash-tail-app ", NotoSansThai.className)}>
         <ThemeProvider
           attribute="class"
           enableSystem={false}
@@ -37,7 +49,7 @@ const Providers = ({ children }: { children: React.ReactNode }) => {
   }
   return (
     <body
-      className={cn("dash-tail-app ", notoSansThai.className, "theme-" + theme)}
+      className={cn("dash-tail-app ", NotoSansThai.className, "theme-" + theme)}
       style={{
         "--radius": `${radius}rem`,
       } as React.CSSProperties

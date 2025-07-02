@@ -1,4 +1,4 @@
-import { api } from "@/config/axios.config";
+import { api } from "@/config/axios.auth";
 import { type Project } from "@/app/api/projects/data";
 import { type Board } from "@/app/api/boards/data";
 import { type Task } from "@/app/api/tasks/data";
