@@ -564,7 +564,7 @@ export function CorporateListDataTable() {
         </div>
       </div>
       <div className="p-1 md:p-5">
-        <Table>
+        <Table className="w-full">
           <TableHeader>
             {table.getHeaderGroups().map(headerGroup => (
               <TableRow key={headerGroup.id}>

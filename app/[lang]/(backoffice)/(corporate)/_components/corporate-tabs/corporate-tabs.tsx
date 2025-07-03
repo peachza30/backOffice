@@ -8,6 +8,13 @@ import { useRouter } from "next/navigation";
 import { useCorporateStore } from "@/store/corporate/useCorporateStore";
 import { Icon } from "@iconify/react";
 import SizeButton from "../../_components/button/size-button";
+import StripedRows from "../corporate-table/striped-rows";
+import StaffAuditList from "../corporate-table/staff-audit";
+import GuaranteesDetails from "../corporate-table/guarantees-details";
+import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
+import DepositAccount from "../corporate-table/deposit-account";
+import DocumentTable from "../corporate-table/document";
+import TransactionHistory from "../corporate-table/transaction-history";
 
 export default function CorporateView({ id }: { id: number }) {
   const router = useRouter();
@@ -88,12 +95,12 @@ export default function CorporateView({ id }: { id: number }) {
           </TabsTrigger>
         </TabsList>
         <div className="p-5 border-collapse border-b-2 border-r-2 border-l-2 border-blue-100/75">
-          <TabsContent value="page1" className="border-2 border-collapse border-blue-100/75">
-            <Card className="mb-4 ">
-              <CardHeader className="bg-blue-50/50">
+          <TabsContent value="page1" className="border-collapse">
+            <Card className="mb-4 border-2 border-blue-100/75">
+              <CardHeader className="bg-blue-50/50 ">
                 <CardTitle className="text-lg font-bold">ข้อมูลนิติบุคคล</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2">
+              <CardContent className="space-y-2 ">
                 <div className="grid grid-cols-1 gap-6">
                   {[
                     { label: "ชื่อนิติบุคคล", value: corporate.nameTh || "บริษัท เอ็ม แอนด์ เอ็ม แอ็คเค้าท์ติ้ง จำกัด" },
@@ -111,7 +118,7 @@ export default function CorporateView({ id }: { id: number }) {
                 </div>
               </CardContent>
             </Card>
-            <Card className="mb-4">
+            <Card className="mb-4 border-2 border-blue-100/75">
               <CardHeader className="bg-blue-50/50">
                 <CardTitle className="text-lg font-bold">วันสำคัญและการจดทะเบียน</CardTitle>
               </CardHeader>
@@ -139,7 +146,7 @@ export default function CorporateView({ id }: { id: number }) {
                 </div>
               </CardContent>
             </Card>
-            <Card className="mb-4">
+            <Card className="mb-4 border-2 border-blue-100/75">
               <CardHeader className="bg-blue-50/50">
                 <CardTitle className="text-lg font-bold">ข้อมูลทางธุรกิจและการเงิน</CardTitle>
               </CardHeader>
@@ -156,135 +163,251 @@ export default function CorporateView({ id }: { id: number }) {
                 </div>
               </CardContent>
             </Card>
-            <Card className="mb-4">
-              <CardHeader className="bg-blue-50/50 m-2">
-                <CardTitle className="text-lg font-bold flex items-center">
-                  รายได้จากการประกอบธุรกิจคิดเป็น :<span className="font-bold ml-1">ทำบัญชี</span>
-                  <div className="flex items-center ml-2 gap-1">
-                    <Input type="text" inputMode="numeric" className="w-28 text-center" placeholder="0.00" />
-                    <span className="font-bold">บาท</span>
-                  </div>
-                  <span className="font-bold ml-10">สอบบัญชี</span>
-                  <div className="flex items-center ml-2 gap-1">
-                    <Input type="text" inputMode="numeric" className="w-28 text-center" placeholder="0.00" />
-                    <span className="font-bold">บาท</span>
-                  </div>
-                  <span className="font-bold ml-10">อื่นๆ</span>
-                  <div className="flex items-center ml-2 gap-1">
-                    <Input type="text" inputMode="numeric" className="w-28 text-center" placeholder="0.00" />
-                    <span className="font-bold">บาท</span>
-                  </div>
-                  <span className="font-bold ml-10">สิ้นรอบบัญชีวันที่</span>
-                  <div className="flex items-center ml-2 gap-1">
-                    <span className="font-bold">31/12/2567</span>
+            <Card className="mb-4 border-2 border-blue-100/75">
+              <CardHeader className="bg-blue-50/50 m-5">
+                <CardTitle className="text-md font-bold">
+                  <div className="flex flex-wrap justify-evenly gap-y-4">
+                    {/* ทำบัญชี */}
+                    <div className="flex items-center gap-1">
+                      รายได้จากการประกอบธุรกิจคิดเป็น :<span className="font-bold ml-8">ทำบัญชี</span>
+                      <Input type="text" inputMode="numeric" className="w-28 text-center" placeholder="0.00" />
+                      <span className="font-bold">บาท</span>
+                    </div>
+
+                    {/* สอบบัญชี */}
+                    <div className="flex items-center gap-1">
+                      <span className="font-bold ml-5">สอบบัญชี</span>
+                      <Input type="text" inputMode="numeric" className="w-28 text-center" placeholder="0.00" />
+                      <span className="font-bold">บาท</span>
+                    </div>
+
+                    {/* อื่นๆ */}
+                    <div className="flex items-center gap-1">
+                      <span className="font-bold ml-5">อื่นๆ</span>
+                      <Input type="text" inputMode="numeric" className="w-28 text-center" placeholder="0.00" />
+                      <span className="font-bold">บาท</span>
+                    </div>
+
+                    {/* สิ้นรอบบัญชี */}
+                    <div className="flex items-center gap-1">
+                      <span className="font-bold ml-5">สิ้นรอบบัญชีวันที่</span>
+                      <span className="font-bold">31/12/2567</span>
+                    </div>
                   </div>
                 </CardTitle>
               </CardHeader>
             </Card>
           </TabsContent>
-          <TabsContent value="page2" className=" border-2 border-collapse border-blue-100/75">
-            <Card>
-              <CardHeader className="bg-blue-50/50">
-                <CardTitle>ที่อยู่</CardTitle>
-                <CardDescription>Change your password here. After saving, be logged out.</CardDescription>
+          <TabsContent value="page2" className="border-collapse">
+            <Card className="mb-4 border-2 border-blue-100/75">
+              <CardHeader className="bg-blue-50/50 ">
+                <CardTitle className="text-lg font-bold">ที่อยู่สำนักงานใหญ่</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2">
-                <div className="space-y-1">
-                  <Label htmlFor="current">Current password</Label>
-                  <Input id="current" type="password" />
-                </div>
-                <div className="space-y-1">
-                  <Label htmlFor="new">New password</Label>
-                  <Input id="new" type="password" />
+              <CardContent className="space-y-2 ">
+                <div className="grid grid-cols-1 gap-6">
+                  {[
+                    { label: "รหัสสาขา", value: corporate.nameTh || "บริษัท เอ็ม แอนด์ เอ็ม แอ็คเค้าท์ติ้ง จำกัด" },
+                    { label: "ที่อยู่", value: corporate.nameEn || "M&M ACCOUNTING LIMITED PARTNERSHIP" },
+                    { label: "โทรศัพท์", value: corporate.registrationNo || "0655567000425" },
+                    { label: "โทรสาร", value: corporate.businessTypeId || "ห้างหุ้นส่วนจำกัด" },
+                    { label: "อีเมล", value: corporate.businessTypeId || "ห้างหุ้นส่วนจำกัด" },
+                  ].map(({ label, value }) => (
+                    <div className="flex items-start gap-4" key={label}>
+                      <label className="block text-sm font-bold text-gray-700 pt-2" style={{ width: "140px", minWidth: "140px" }}>
+                        {label}
+                      </label>
+                      <p className="text-sm text-gray-900 p-2 rounded flex-1">{value}</p>
+                    </div>
+                  ))}
                 </div>
               </CardContent>
-              <CardFooter>
-                <Button>Save password</Button>
-              </CardFooter>
+            </Card>
+            <Card className="mb-4 border-2 border-blue-100/75">
+              <CardHeader className="bg-blue-50/50">
+                <CardTitle className="text-lg font-bold">ที่อยู่ในการออกใบเสร็จ</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <div className="grid grid-cols-1 gap-6">
+                  {[
+                    { label: "รหัสสาขา", value: corporate.nameTh || "บริษัท เอ็ม แอนด์ เอ็ม แอ็คเค้าท์ติ้ง จำกัด" },
+                    { label: "ที่อยู่", value: corporate.nameEn || "M&M ACCOUNTING LIMITED PARTNERSHIP" },
+                    { label: "โทรศัพท์", value: corporate.registrationNo || "0655567000425" },
+                    { label: "โทรสาร", value: corporate.businessTypeId || "ห้างหุ้นส่วนจำกัด" },
+                    { label: "อีเมล", value: corporate.businessTypeId || "ห้างหุ้นส่วนจำกัด" },
+                  ].map(({ label, value }) => (
+                    <div className="flex items-start gap-4" key={label}>
+                      <label className="block text-sm font-bold text-gray-700 pt-2" style={{ width: "140px", minWidth: "140px" }}>
+                        {label}
+                      </label>
+                      <p className="text-sm text-gray-900 p-2 rounded flex-1">{value}</p>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="mb-4 border-2 border-blue-100/75">
+              <CardHeader className="bg-blue-50/50">
+                <CardTitle className="text-lg font-bold">ที่อยู่สาขา</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2 ">
+                <div className="grid grid-cols-1 gap-6">
+                  {[
+                    { label: "รหัสสาขา", value: corporate.nameTh || "บริษัท เอ็ม แอนด์ เอ็ม แอ็คเค้าท์ติ้ง จำกัด" },
+                    { label: "ที่อยู่", value: corporate.nameEn || "M&M ACCOUNTING LIMITED PARTNERSHIP" },
+                    { label: "โทรศัพท์", value: corporate.registrationNo || "0655567000425" },
+                    { label: "โทรสาร", value: corporate.businessTypeId || "ห้างหุ้นส่วนจำกัด" },
+                    { label: "อีเมล", value: corporate.businessTypeId || "ห้างหุ้นส่วนจำกัด" },
+                    { label: "รหัสสาขา", value: corporate.nameTh || "บริษัท เอ็ม แอนด์ เอ็ม แอ็คเค้าท์ติ้ง จำกัด" },
+                    { label: "ที่อยู่", value: corporate.nameEn || "M&M ACCOUNTING LIMITED PARTNERSHIP" },
+                    { label: "โทรศัพท์", value: corporate.registrationNo || "0655567000425" },
+                    { label: "โทรสาร", value: corporate.businessTypeId || "ห้างหุ้นส่วนจำกัด" },
+                    { label: "อีเมล", value: corporate.businessTypeId || "ห้างหุ้นส่วนจำกัด" },
+                  ].map(({ label, value }) => (
+                    <div className="flex items-start gap-4" key={label}>
+                      <label className="block text-sm font-bold text-gray-700 pt-2" style={{ width: "140px", minWidth: "140px" }}>
+                        {label}
+                      </label>
+                      <p className="text-sm text-gray-900 p-2 rounded flex-1">{value}</p>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
             </Card>
           </TabsContent>
-          <TabsContent value="page3" className="border-2 border-collapse border-blue-100/75">
-            <Card>
+          <TabsContent value="page3" className="border-collapse">
+            <Card className="mb-4 border-2 border-blue-100/75">
               <CardHeader className="bg-blue-50/50">
-                <CardTitle>รายนาม/พนักงาน</CardTitle>
-                <CardDescription>Change your password here. After saving, be logged out.</CardDescription>
+                <CardTitle className="font-bold">รายนามกรรมการ</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <div className="space-y-1">
-                  <Label htmlFor="current">Current password</Label>
-                  <Input id="current" type="password" />
-                </div>
-                <div className="space-y-1">
-                  <Label htmlFor="new">New password</Label>
-                  <Input id="new" type="password" />
-                </div>
+                <StripedRows />
               </CardContent>
-              <CardFooter>
-                <Button>Save password</Button>
-              </CardFooter>
+            </Card>
+            <Card className="mb-4 border-2 border-blue-100/75">
+              <CardHeader className="bg-blue-50/50">
+                <CardTitle className="font-bold">รายนามหัวหน้าสำนักงาน</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <StripedRows />
+              </CardContent>
+            </Card>
+            <Card className="mb-4 border-2 border-blue-100/75">
+              <CardHeader className="bg-blue-50/50">
+                <CardTitle className="font-bold">รายนามผู้ทำบัญชี</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <StripedRows />
+              </CardContent>
+            </Card>
+            <Card className="mb-4 border-2 border-blue-100/75">
+              <CardHeader className="bg-blue-50/50">
+                <CardTitle className="font-bold">รายนามผู้สอบบัญชี</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <StripedRows />
+              </CardContent>
+            </Card>
+            <Card className="mb-4 border-2 border-blue-100/75">
+              <CardHeader className="bg-blue-50/50">
+                <CardTitle className="font-bold">พนักงานที่ให้บริการงานสอบบัญชี (24)</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <StaffAuditList />
+              </CardContent>
             </Card>
           </TabsContent>
-          <TabsContent value="page4" className="border-2 border-collapse border-blue-100/75">
-            <Card>
+          <TabsContent value="page4" className="border-collapse">
+            <Card className="mb-4 border-2 border-blue-100/75">
               <CardHeader className="bg-blue-50/50">
-                <CardTitle>รายละเอียดหลักประกัน</CardTitle>
-                <CardDescription>Change your password here. After saving, be logged out.</CardDescription>
+                <CardTitle className="font-bold">รายละเอียดการจัดให้มีหลักประกัน</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <div className="space-y-1">
-                  <Label htmlFor="current">Current password</Label>
-                  <Input id="current" type="password" />
+                <div className="flex items-start gap-4">
+                  <label className="block text-sm font-bold text-gray-700 pt-2" style={{ width: "auto", minWidth: "140px" }}>
+                    รายได้รวมสำหรับค่าบริการที่ต้องจัดให้มีหลักประกัน สิ้นรอบปีบัญชี ณ วันที่ :
+                  </label>
+                  <p className="text-sm text-gray-900 p-2 rounded flex-1">{corporate.nameTh || "บริษัท เอ็ม แอนด์ เอ็ม แอ็คเค้าท์ติ้ง จำกัด"}</p>
                 </div>
-                <div className="space-y-1">
-                  <Label htmlFor="new">New password</Label>
-                  <Input id="new" type="password" />
+                <div className="pl-5 pt-3 pb-5 grid grid-cols-1 gap-6">
+                  {[
+                    { label: "เงินทุนจดทะเบียน : ", value: corporate.nameEn || "M&M ACCOUNTING LIMITED PARTNERSHIP" },
+                    { label: "รายได้รอบปีบัญชี : ", value: corporate.nameEn || "300" },
+                  ].map(({ label, value }) => (
+                    <div className="flex items-start gap-4" key={label}>
+                      <label className="block text-sm font-bold text-gray-700" style={{ width: "140px", minWidth: "140px" }}>
+                        {label}
+                      </label>
+                      <p className="text-sm text-gray-900 rounded flex-1">{value}</p>
+                    </div>
+                  ))}
+                </div>
+                <GuaranteesDetails />
+                <div className="p-4">
+                  <p>ข้าพเจ้าได้จัดให้มีหลักประกันเพื่อประกันความรับผิดชอบต่อบุคคลที่สามแล้ว ตามกฏกระทรวง เป็นจำนวนไม่น้อยกว่าร้อยละ 3 และในการแจ้งหลักประกันครั้งนี้จำนวนที่มากกว่าในการคิดคำนวณหลักประกันคือ</p>
+                </div>
+                <div className="p-4 bg-blue-50/50 flex flex-col justify-center items-center">
+                  <RadioGroup defaultValue="wrong" className="">
+                    <RadioGroupItem size="sm" color="secondary" value="right" id="r_1">
+                      <p className="font-bold">ของทุน ณ วันที่ยื่นจดทะเบียนต่อสภาวิชาชีพบัญชี / วันสิ้นรอบปีบัญชี</p>
+                    </RadioGroupItem>
+                    <RadioGroupItem size="sm" color="secondary" value="wrong" id="r_2">
+                      <p className="font-bold">ของรายได้รอบปีบัญชี 2568</p>
+                    </RadioGroupItem>
+                  </RadioGroup>
+                </div>
+                <div className="pl-5 pt-3 pb-5 grid grid-cols-1 gap-6">
+                  {[
+                    { label: "สิ้นรอบปีบัญชี ณ วันที่ : ", value: corporate.nameEn || "M&M ACCOUNTING LIMITED PARTNERSHIP" },
+                    { label: "คิดเป็นจำนวนเงิน : ", value: corporate.nameEn || "300" },
+                  ].map(({ label, value }) => (
+                    <div className="flex items-start gap-4" key={label}>
+                      <label className="block text-sm font-bold text-gray-700" style={{ width: "140px", minWidth: "140px" }}>
+                        {label}
+                      </label>
+                      <p className="text-sm text-gray-900 rounded flex-1">{value}</p>
+                    </div>
+                  ))}
                 </div>
               </CardContent>
-              <CardFooter>
-                <Button>Save password</Button>
-              </CardFooter>
+            </Card>
+            <Card className="mb-4 border-2 border-blue-100/75">
+              <CardHeader className="bg-blue-50/50">
+                <CardTitle className="font-bold">รายละเอียดหลักประกัน : บัญชีเงินฝากประจำ</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <DepositAccount />
+              </CardContent>
             </Card>
           </TabsContent>
-          <TabsContent value="page5" className="border-2 border-collapse border-blue-100/75">
-            <Card>
+          <TabsContent value="page5" className="border-collapse">
+            <Card className="mb-4 border-2 border-blue-100/75">
               <CardHeader className="bg-blue-50/50">
-                <CardTitle>เอกสารในการสมัคร</CardTitle>
-                <CardDescription>Change your password here. After saving, be logged out.</CardDescription>
+                <CardTitle className="font-bold">เอกสาร</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <div className="space-y-1">
-                  <Label htmlFor="current">Current password</Label>
-                  <Input id="current" type="password" />
-                </div>
-                <div className="space-y-1">
-                  <Label htmlFor="new">New password</Label>
-                  <Input id="new" type="password" />
-                </div>
+                <DocumentTable />
               </CardContent>
-              <CardFooter>
-                <Button>Save password</Button>
-              </CardFooter>
             </Card>
           </TabsContent>
-          <TabsContent value="page6" className="border-2 border-collapse border-blue-100/75">
-            <Card>
-              <CardHeader className="bg-blue-50/50">
-                <CardTitle>ประวัติคำขอและการชำระเงิน</CardTitle>
-                <CardDescription>Change your password here. After saving, be logged out.</CardDescription>
-              </CardHeader>
+          <TabsContent value="page6" className="border-collapse">
+            <div className="flex items-center justify-between mb-7 gap-x-4 ">
+              <p className="font-bold text-lg">คำค้น</p>
+              <Input placeholder="เลขที่คำขอ" className="flex-1" />
+              <p className="font-bold text-lg">ประเภทคำขอ</p>
+              <Input placeholder="ทั้งหมด" className="flex-1" />
+              <Button variant="outline" className="w-32">
+                <Icon icon="solar:search-bold-duotone" width="20" height="20" className="mr-2" />
+                Search
+              </Button>
+              <Button variant="outline" className="w-32">
+                <Icon icon="solar:refresh-bold-duotone" width="20" height="20" className="mr-2" />
+                Clear
+              </Button>
+            </div>
+            <Card className="mb-4 border-2 border-blue-100/75">
               <CardContent className="space-y-2">
-                <div className="space-y-1">
-                  <Label htmlFor="current">Current password</Label>
-                  <Input id="current" type="password" />
-                </div>
-                <div className="space-y-1">
-                  <Label htmlFor="new">New password</Label>
-                  <Input id="new" type="password" />
-                </div>
+                <TransactionHistory />
               </CardContent>
-              <CardFooter>
-                <Button>Save password</Button>
-              </CardFooter>
             </Card>
           </TabsContent>
         </div>
