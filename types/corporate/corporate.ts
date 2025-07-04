@@ -211,10 +211,11 @@ interface CorporateStore {
    error: string | null;
    corporates: CorporateList[];
    corporate: CorporateList | null;
+   documents: any[];
    mode: "create" | "edit" | "view" | null;
    metadata: ApiMetadata | null;
    total: number;
-   
+
    // Methods
    setMode: (mode: "create" | "edit" | "view") => void;
    fetchCorporates: (params?: any) => Promise<void>;
@@ -222,4 +223,5 @@ interface CorporateStore {
    createCorporate: (data: CorporatePayload, params?: any) => Promise<void>;
    updateCorporate: (id: number, data: CorporatePayload, params?: any) => Promise<void>;
    deleteCorporate: (id: number, params?: FetchParams) => Promise<void>;
+   fetchCorporateDocuments: () => Promise<void>;
 }

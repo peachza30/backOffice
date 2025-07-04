@@ -1,74 +1,85 @@
 "use client";
-import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Icon } from "@iconify/react";
-import Image from "next/image";
 
-type Props = {
+import React, { useEffect, useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../corporate-dialog/dialog";
+import { Icon } from "@iconify/react";
+import { Button } from "../ui/button";
+
+interface DocumentViewerDialogProps {
   open: boolean;
   onClose: () => void;
-  title: string;
-  filePages: string[]; // array of image/pdf page URLs
-};
+  files: any[];
+  initialIndex: number;
+}
 
-const DocumentViewerDialog = ({ open, onClose, title, filePages }: Props) => {
-  const [page, setPage] = useState(0);
+const NAV_BTN_WIDTH = "w-12"; // change here to enlarge / shrink click zone
 
-  const handleNext = () => {
-    if (page < filePages.length - 1) setPage(prev => prev + 1);
-  };
+const DocumentViewerDialog: React.FC<DocumentViewerDialogProps> = ({ open, onClose, files, initialIndex }) => {
+  const [index, setIndex] = useState(initialIndex);
 
-  const handlePrevious = () => {
-    if (page > 0) setPage(prev => prev - 1);
-  };
+  // Reset page on new open / index change
+  useEffect(() => {
+    if (open) setIndex(initialIndex);
+  }, [open, initialIndex]);
 
-  const handleReload = () => {
-    // สำหรับการรีเฟรชภาพ: เปลี่ยน URL ให้เปลี่ยน query param
-    const current = filePages[page];
-    filePages[page] = current + `?r=${Math.random()}`;
-    setPage(prev => prev); // force re-render
+  const goPrev = () => setIndex(i => Math.max(0, i - 1));
+  const goNext = () => setIndex(i => Math.min(files.length - 1, i + 1));
+
+  const handleReload = async () => {
+    if (index === 0) {
+      await setIndex(i => Math.min(files.length - 1, i + 1));
+      await setIndex(i => Math.max(0, i - 1));
+    } else {
+      await setIndex(i => Math.max(0, i - 1));
+      await setIndex(i => Math.min(files.length - 1, i + 1));
+    }
   };
 
   const handlePrint = () => {
-    const printWindow = window.open(filePages[page], "_blank");
+    const printWindow = window.open(files[index], "_blank");
     printWindow?.print();
   };
 
   const handleDownload = () => {
+    // guard-check
+    if (!files[index]) return;
     const link = document.createElement("a");
-    link.href = filePages[page];
-    link.download = `document_page_${page + 1}`;
+    link.href = files[index]; // or files[index].url if your item is an object
+    link.download = `document_page_${index + 1}`; // back-ticks for template literal
+
+    // Firefox needs the element in the DOM
+    document.body.appendChild(link);
     link.click();
+    document.body.removeChild(link);
   };
+
+  const currentFile = files[index];
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="w-full max-w-6xl h-[85vh] flex flex-col gap-3" size="full">
+      <DialogContent className="w-full max-w-7xl h-[85vh] flex flex-col gap-3 pl-14 pr-pl-14" size="full">
         <DialogHeader>
-          <DialogTitle className="text-lg">{title}</DialogTitle>
+          <DialogTitle className="text-lg text-center">ประเภทเอกสาร : {currentFile?.type ?? "เอกสาร"}</DialogTitle>
         </DialogHeader>
-        <div className="flex-1 flex items-center justify-center bg-gray-100 rounded border overflow-hidden">
-          <div className="relative w-full h-full">
-            <Image src={filePages[page]} alt={`Page ${page + 1}`} fill className="object-contain" sizes="(max-width: 1024px) 100vw, 1024px" priority />
-          </div>
-        </div>
 
-        {/* controls */}
+        {/* Viewer */}
+        <div className="relative flex-1 bg-gray-100 rounded border overflow-hidden group">
+          {/* Left click‑strip */}
+          <button aria-label="ก่อนหน้า" onClick={goPrev} disabled={index === 0} className={`absolute inset-y-0 left-0 ${NAV_BTN_WIDTH} flex items-center justify-center transition-opacity bg-blue-50 hover:bg-blue-200/50 disabled:opacity-0 cursor-pointer`}>
+            <Icon icon="mdi:chevron-left" width={36} height={36} className="drop-shadow" style={{ color: "#2563EB" }} />
+          </button>
+          {/* iframe */}
+          {currentFile ? <iframe src={currentFile.file} style={{ overflow: "hidden" }} className="w-full h-full border-none pl-12 pr-12 overflow-hidden " title={currentFile.type} /> : <p className="flex items-center justify-center h-full">ไม่พบไฟล์</p>}
+          {/* Right click‑strip */}
+          <button aria-label="ถัดไป" onClick={goNext} disabled={index === files.length - 1} className={`absolute inset-y-0 right-0 ${NAV_BTN_WIDTH} flex items-center justify-center transition-opacity bg-blue-50 hover:bg-blue-200/50  disabled:opacity-0 cursor-pointer`}>
+            <Icon icon="mdi:chevron-right" width={36} height={36} className="drop-shadow" style={{ color: "#2563EB" }} />
+          </button>
+        </div>
+        {/* Footer */}
         <div className="flex items-center justify-between text-sm text-gray-700">
           {/* left: page info */}
-          <div>
-            File: {page + 1}/{filePages.length}
-          </div>
-
-          {/* center: arrows */}
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" onClick={handlePrevious} disabled={page === 0}>
-              <Icon icon="mdi:chevron-left" />
-            </Button>
-            <Button variant="ghost" size="icon" onClick={handleNext} disabled={page === filePages.length - 1}>
-              <Icon icon="mdi:chevron-right" />
-            </Button>
+          <div className="font-semibold">
+            File: {index + 1} / {files.length}
           </div>
 
           {/* right: actions */}
