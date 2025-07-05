@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../corporate-dialog/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./dialog";
 import { Icon } from "@iconify/react";
 import { Button } from "../ui/button";
 
@@ -9,7 +9,7 @@ interface DocumentViewerDialogProps {
   open: boolean;
   onClose: () => void;
   files: any[];
-  initialIndex: number;
+  initialIndex: number | null;
 }
 
 const NAV_BTN_WIDTH = "w-12"; // change here to enlarge / shrink click zone
@@ -22,30 +22,31 @@ const DocumentViewerDialog: React.FC<DocumentViewerDialogProps> = ({ open, onClo
     if (open) setIndex(initialIndex);
   }, [open, initialIndex]);
 
-  const goPrev = () => setIndex(i => Math.max(0, i - 1));
-  const goNext = () => setIndex(i => Math.min(files.length - 1, i + 1));
+  const goPrev = () => setIndex(i => (i === null ? 0 : Math.max(0, i - 1)));
+  const goNext = () => setIndex(i => (i === null ? 0 : Math.min(files.length - 1, i + 1)));
 
   const handleReload = async () => {
-    if (index === 0) {
-      await setIndex(i => Math.min(files.length - 1, i + 1));
-      await setIndex(i => Math.max(0, i - 1));
+    if (index !== 0) {
+      await setIndex(0);
     } else {
-      await setIndex(i => Math.max(0, i - 1));
-      await setIndex(i => Math.min(files.length - 1, i + 1));
+      await setIndex(null);
+      await setIndex(0);
     }
   };
 
   const handlePrint = () => {
+    if (index === null) return;
     const printWindow = window.open(files[index], "_blank");
     printWindow?.print();
   };
 
   const handleDownload = () => {
     // guard-check
-    if (!files[index]) return;
+    const currentIndex = index !== null ? index : 0;
+    if (!files[currentIndex]) return;
     const link = document.createElement("a");
-    link.href = files[index]; // or files[index].url if your item is an object
-    link.download = `document_page_${index + 1}`; // back-ticks for template literal
+    link.href = files[currentIndex]; // or files[currentIndex].url if your item is an object
+    link.download = `document_page_${currentIndex + 1}`; // back-ticks for template literal
 
     // Firefox needs the element in the DOM
     document.body.appendChild(link);
@@ -53,7 +54,8 @@ const DocumentViewerDialog: React.FC<DocumentViewerDialogProps> = ({ open, onClo
     document.body.removeChild(link);
   };
 
-  const currentFile = files[index];
+  const currentIndex = index ?? 0;
+  const currentFile = files[currentIndex];
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -79,19 +81,19 @@ const DocumentViewerDialog: React.FC<DocumentViewerDialogProps> = ({ open, onClo
         <div className="flex items-center justify-between text-sm text-gray-700">
           {/* left: page info */}
           <div className="font-semibold">
-            File: {index + 1} / {files.length}
+            File: {index !== null ? index + 1 : 0} / {files.length}
           </div>
 
           {/* right: actions */}
           <div className="flex gap-2">
-            <Button size="icon" variant="ghost" onClick={handleReload}>
-              <Icon icon="mdi:refresh" />
+            <Button size="icon" variant="soft" className="rounded-full" onClick={handleReload}>
+              <Icon icon="icon-park-outline:redo" />
             </Button>
-            <Button size="icon" variant="ghost" onClick={handleDownload}>
-              <Icon icon="mdi:download" />
+            <Button size="icon" variant="soft" className="rounded-full" onClick={handleDownload}>
+              <Icon icon="fluent:save-28-filled" />
             </Button>
-            <Button size="icon" variant="ghost" onClick={handlePrint}>
-              <Icon icon="mdi:printer" />
+            <Button size="icon" variant="soft" className="rounded-full" onClick={handlePrint}>
+              <Icon icon="fluent:print-24-filled" />
             </Button>
           </div>
         </div>

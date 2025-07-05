@@ -78,56 +78,48 @@ interface CorporatePayload {
    isShowCustomer: number;
 }
 
-interface CorporateRequest {
-   data: CorporateRequestData;
-}
 
-interface CorporateRequestData {
-   Registration_No: string;
-   Tax_ID: string;
-   Business_Type_ID: number;
-   Name_TH: string;
-   Name_EN: string;
-   Capital: string;
-   Registration_Date: string;
-   DBD_Registration_Date: string;
-   Revenue_Year: string;
-   Fiscal_Year_End_Date: string;
-   Accounting_Revenue: string | number;
-   Auditing_Revenue: string | number;
-   Accounting_Customer_Amount: number;
-   Accounting_Customer_Income: number;
-   Accounting_Customer_None_Amount: number;
-   Accounting_Customer_None_Income: number;
-   Accounting_Total_Income: number;
-   Auditoring_Customer_Amount: number;
-   Auditoring_Customer_Income: number;
-   Auditoring_Customer_None_Amount: number;
-   Auditoring_Customer_None_Income: number;
-   Auditoring_Total_Income: number;
-   Other_Revenue: number;
-   Total_Revenue: number;
-   Rate_Type: number;
-   Request_Date: string;
-   Request_Date_type: number;
-   Request_Date_Type_Date: string;
-   Document_Receive_Date: string;
-   Membership_Period: number;
-   Request_Form_ID: number;
-   Fee: number;
-   Address: Address[];
-   Persons_committee: Person[];
-   Persons_Chief: Person[];
-   Worker: Worker;
-   Guarantee: Guarantee[];
-   Corporate_Service_Type_ID: number;
-   End_of_Reporting_Period_Date: number;
-   End_of_Reporting_Period_Month: number;
-   ApplicationRequest_ID: string;
-   RequestNumber: string;
-   CreatedDate: string;
-   IdentityId: string;
-   requestId: string;
+interface CorporateRequest {
+   id: number;
+   requestNo: string;
+   requestType: number;
+   registrationNo: string;
+   taxId: string;
+   nameTh: string;
+   nameEn: string;
+   mobilePhone: string;
+   email: string;
+   dbdRegistrationDate: string | null;
+   registrationDate: string | null;
+   businessTypeId: number;
+   corporateServiceTypeId: number;
+   capital: string;
+   revenueYear: string;
+   fiscalYearEndDate: string;
+   accountingRevenue: string;
+   auditingRevenue: string;
+   otherRevenue: string;
+   rateType: number;
+   beginDate: string;
+   expiredDate: string;
+   remark: string;
+   status: number;
+   updateByRequestNo: string;
+   updateByRequestFormId: number;
+   createDate: string | null;
+   updateDate: string;
+   updateUser: string;
+   requestDateType: number;
+   requestDateTypeDate: string;
+   accountingCustomerAmount: number;
+   accountingCustomerIncome: string;
+   accountingCustomerNoneAmount: number;
+   accountingCustomerNoneIncome: string;
+   auditoringCustomerAmount: number;
+   auditoringCustomerIncome: string;
+   auditoringCustomerNoneAmount: number;
+   auditoringCustomerNoneIncome: string;
+   isShowCustomer: number;
 }
 
 interface Address {
@@ -211,17 +203,28 @@ interface CorporateStore {
    error: string | null;
    corporates: CorporateList[];
    corporate: CorporateList | null;
+   requests: CorporateRequest[];
+   request: CorporateRequest | null;
    documents: any[];
    mode: "create" | "edit" | "view" | null;
    metadata: ApiMetadata | null;
    total: number;
 
-   // Methods
+   // ##### Methods ####
    setMode: (mode: "create" | "edit" | "view") => void;
-   fetchCorporates: (params?: any) => Promise<void>;
+
+   // Corporate-List
+   fetchCorporates: (params?: FetchParams) => Promise<void>;
    fetchCorporateById: (id: number) => Promise<void>;
+   fetchCorporateDocuments: () => Promise<void>;
    createCorporate: (data: CorporatePayload, params?: any) => Promise<void>;
    updateCorporate: (id: number, data: CorporatePayload, params?: any) => Promise<void>;
    deleteCorporate: (id: number, params?: FetchParams) => Promise<void>;
-   fetchCorporateDocuments: () => Promise<void>;
+   
+   // Corporate-Request
+   fetchCorporateRequests: (params: FetchParams) => Promise<void>;
+   fetchCorporateRequest: (id: number) => Promise<void>;
+   createCorporateRequest: (data: CorporateRequest, params: FetchParams) => Promise<void>;
+   updateCorporateRequest: (id: number, data: CorporateRequest, params: FetchParams) => Promise<void>;
+   deleteCorporateRequest: (id: number, params: FetchParams) => Promise<void>;
 }

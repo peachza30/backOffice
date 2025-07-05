@@ -67,6 +67,28 @@ const columns: ColumnDef<CorporateList>[] = [
     },
   },
   {
+    accessorKey: "requestNo", // Fixed: use actual property name
+    header: ({ column }) => {
+      return (
+        <div className="flex items-center space-x-2">
+          <span className="text-sm font-medium">เลขที่คำขอ</span>
+        </div>
+      );
+    },
+    cell: ({ row }) => <div className="whitespace-nowrap font-medium">{row.getValue("requestNo")}</div>,
+  },
+  {
+    accessorKey: "requestType", // Fixed: use actual property name
+    header: ({ column }) => {
+      return (
+        <div className="flex items-center space-x-2">
+          <span className="text-sm font-medium">ประเภทคำขอ</span>
+        </div>
+      );
+    },
+    cell: ({ row }) => <div className="whitespace-nowrap font-medium">{row.getValue("requestType")}</div>,
+  },
+  {
     accessorKey: "registrationNo", // Fixed: use actual property name
     header: ({ column }) => {
       return (
@@ -89,30 +111,35 @@ const columns: ColumnDef<CorporateList>[] = [
     cell: ({ row }) => <div className="whitespace-nowrap font-medium">{row.getValue("nameTh")}</div>,
   },
   {
-    accessorKey: "nameEn", // Fixed: use actual property name
+    accessorKey: "createDate", // Fixed: use actual property name
     header: ({ column }) => {
       return (
         <div className="flex items-center space-x-2">
-          <span className="text-sm font-medium">ชื่อภาษาอังกฤษ</span>
+          <span className="text-sm font-medium">วันที่ยื่นคำขอ</span>
         </div>
       );
     },
-    cell: ({ row }) => <div className="whitespace-nowrap font-medium">{row.getValue("nameEn")}</div>,
+    cell: ({ row }) => <div className="whitespace-nowrap font-medium">{row.getValue("createDate")}</div>,
   },
-  // {
-  //   accessorKey: "corporate_code", // Added corporate code column
-  //   header: "corporate CODE",
-  //   cell: ({ row }) => <div className="font-mono text-sm text-muted-foreground">{row.getValue("corporate_code")}</div>,
-  // },
   {
     accessorKey: "status", // Fixed: use actual property name
     header: () => <div className="text-center">สถานะ</div>,
     cell: ({ row }) => {
       const status = row.getValue("status") as number;
+      const statusMap: Record<number, { label: string; color: "default" | "warning" | "destructive" | "secondary" | "info" | "success" }> = {
+        1: { label: "รอการตรวจสอบ", color: "warning" },
+        2: { label: "รอการชำระเงิน", color: "default" },
+        3: { label: "ตรวจสอบไม่ผ่าน", color: "destructive" },
+        4: { label: "ยกเลิก", color: "secondary" },
+        5: { label: "ชำระเงินแล้ว", color: "info" },
+        6: { label: "อนุมัติ", color: "success" },
+      };
+      const { label, color } = statusMap[status] || { label: "ไม่ทราบสถานะ", color: "default" };
+
       return (
         <div className="text-center font-medium">
-          <Badge variant="soft" color={status === 1 ? "success" : status === 2 ? "destructive" : "secondary"} className="capitalize">
-            {status === 1 ? "คงอยู่" : status === 2 ? "ขาดต่อ" : "ยกเลิก"}
+          <Badge variant="soft" color={color} className="capitalize">
+            {label}
           </Badge>
         </div>
       );
@@ -248,19 +275,24 @@ const columns: ColumnDef<CorporateList>[] = [
   },
 ];
 
-export function CorporateListDataTable() {
+export function CorporateRequestDataTable() {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
-  const { corporates, metadata, fetchCorporates } = useCorporateStore();
-  const { fetchUser } = useUserStore();
-  const [search, setSearch] = useState("");
-  const [statusVal, setStatusVal] = useState("");
   const [pageSize, setPageSize] = useState(5);
   const [globalFilter, setGlobalFilter] = useState("");
   const [loading, setLoading] = useState(false);
   const [fetchClear, setFetchClear] = useState(false);
+
+  const { requests, metadata, fetchCorporateRequests } = useCorporateStore();
+  const { fetchUser } = useUserStore();
+
+  const [search, setSearch] = useState(""); // คำค้น
+  const [statusVal, setStatusVal] = useState(""); // สถานะคำขอ
+  const [requestTypeVal, setRequestTypeVal] = useState(""); // ประเภทคำขอ
+  const [startDate, setStartDate] = useState(""); // วันที่เริ่มต้น (yyyy-mm-dd)
+  const [endDate, setEndDate] = useState(""); // วันที่สิ้นสุด
 
   const status: { value: string; label: string }[] = [
     { value: "", label: "--- All ---" },
@@ -277,7 +309,7 @@ export function CorporateListDataTable() {
   }, [search, statusVal, fetchClear]);
 
   useEffect(() => {
-    fetchCorporates({
+    fetchCorporateRequests({
       search: globalFilter || "",
       status: statusVal,
       page: 1,
@@ -289,10 +321,11 @@ export function CorporateListDataTable() {
   useEffect(() => {
     // const userIds = Array.from(new Set(corporates.flatMap(row => [row.updated_by, row.created_by]).filter(Boolean)));
     // userIds.forEach(id => fetchUser(id as number));
-  }, [corporates]);
+  }, [requests]);
+  console.log("requests", requests);
 
   const table = useReactTable({
-    data: corporates || [],
+    data: requests || [],
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -324,7 +357,7 @@ export function CorporateListDataTable() {
     const currentPageSize = metadata ? Number(metadata.limit) : 5;
 
     try {
-      await fetchCorporates({
+      await fetchCorporateRequests({
         search: search || "",
         status: statusVal || "",
         page: currentPage + 1, // Convert 0-based to 1-based for API
@@ -498,63 +531,73 @@ export function CorporateListDataTable() {
           </DropdownMenuContent>
         </DropdownMenu>
       </div> */}
-      <div className="p-1 md:p-5 grid grid-cols-[auto_1fr_1fr_auto] gap-4 items-center text-default-900">
-        <p className="">Status</p>
-        <div className="">
-          <Select
-            value={currentStatusValue}
-            onValueChange={(newValue: string) => {
-              setStatusVal(newValue);
-            }}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="--All--" />
-            </SelectTrigger>
-            <SelectContent>
-              {status.map(opt => (
-                <SelectItem key={opt.value} value={opt.value}>
-                  {opt.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-5 text-sm text-default-900">
+        {/* ประเภทคำขอ */}
+        <div className="flex items-center gap-4">
+          <label className="w-32 font-semibold whitespace-nowrap">ประเภทคำขอ</label>
+          <div className="w-full">
+            <Select value={requestTypeVal} onValueChange={setRequestTypeVal}>
+              <SelectTrigger>
+                <SelectValue placeholder="ทั้งหมด" />
+              </SelectTrigger>
+              <SelectContent>
+                {status.map(opt => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
-        <>
-          <InputGroup merged>
-            <InputGroupText>{/* <Icon icon="heroicons:magnifying-glass" /> */}</InputGroupText>
-            <Input
-              type="text"
-              placeholder="Search.."
-              value={search}
-              onChange={search => {
-                setSearch(search.target.value);
-              }}
-            />
-          </InputGroup>
-        </>
-        <div className="space-x-4">
-          <Button
-            variant="outline"
-            className="w-32"
-            onClick={() => {
-              fetchData();
-            }}
-          >
-            <Icon icon="mingcute:search-line" width="24" height="24" />
-            Search
-          </Button>{" "}
-          {/* 128px */}
-          <Button
-            variant="outline"
-            className="w-32"
-            onClick={() => {
-              handleClear();
-            }}
-          >
-            <Icon icon="solar:refresh-line-duotone" width="24" height="24" />
-            Clear
-          </Button>{" "}
+
+        {/* สถานะคำขอ */}
+        <div className="flex items-center gap-4">
+          <label className="w-20 font-semibold whitespace-nowrap text-right">สถานะคำขอ</label>
+          <div className="w-full">
+            <Select value={statusVal} onValueChange={setStatusVal}>
+              <SelectTrigger>
+                <SelectValue placeholder="ทั้งหมด" />
+              </SelectTrigger>
+              <SelectContent>
+                {status.map(opt => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
+
+        {/* วันที่ยื่นคำขอ */}
+        <div className="flex items-center gap-4">
+          <label className="w-32 font-semibold whitespace-nowrap">วันที่ยื่นคำขอ</label>
+          <div className="flex gap-2 w-full">
+            <Input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="w-full" />
+            <span className="text-sm flex items-center justify-center font-semibold">ถึง</span>
+            <Input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="w-full" />
+          </div>
+        </div>
+
+        {/* คำค้น */}
+        <div className="flex items-center gap-4">
+          <label className="w-20 font-semibold whitespace-nowrap text-right">คำค้น</label>
+          <div className="w-full">
+            <Input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="เลขที่คำขอ/เลขทะเบียนนิติบุคคล/ชื่อนิติบุคคล" className="w-full" />
+          </div>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-end gap-4 pr-5 pt-1 text-default-900">
+        <Button variant="outline" className="w-28" onClick={fetchData}>
+          <Icon icon="mingcute:search-line" width="24" height="24" />
+          ค้นหา
+        </Button>
+        <Button variant="outline" className="w-28" onClick={handleClear}>
+          <Icon icon="solar:refresh-line-duotone" width="24" height="24" />
+          ล้างค่า
+        </Button>
       </div>
       <div className="p-1 md:p-5">
         <Table className="w-full">
@@ -591,4 +634,4 @@ export function CorporateListDataTable() {
   );
 }
 
-export default CorporateListDataTable;
+export default CorporateRequestDataTable;

@@ -3,6 +3,8 @@ const data =
    "data": [
       {
          "id": 20285,
+         "requestNo": "N-MC-68-000694",
+         "requestType": "คำขอจดทะเบียนของนิติบุคคล",
          "registrationNo": "12345678901111",
          "taxId": "9876543210",
          "nameTh": "บริษัท ตัวอย่าง จำกัด",
@@ -23,7 +25,7 @@ const data =
          "beginDate": "2024-12-31T17:00:00.000Z",
          "expiredDate": "2025-12-30T17:00:00.000Z",
          "remark": "หมายเหตุเพิ่มเติม",
-         "status": 2,
+         "status": 1,
          "updateByRequestNo": "REQ-001",
          "updateByRequestFormId": 123,
          "createDate": null,
@@ -43,6 +45,8 @@ const data =
       },
       {
          "id": 20284,
+         "requestNo": "N-MC-68-000694",
+         "requestType": "คำขอจดทะเบียนของนิติบุคคล",
          "registrationNo": "0965568000443",
          "taxId": "",
          "nameTh": "ทำบัญชี",
@@ -63,7 +67,7 @@ const data =
          "beginDate": "2025-06-16T17:00:00.000Z",
          "expiredDate": "2026-06-15T17:00:00.000Z",
          "remark": "",
-         "status": 1,
+         "status": 2,
          "updateByRequestNo": "N-MC-67-000226",
          "updateByRequestFormId": 5,
          "createDate": "2025-06-18T06:28:59.163Z",
@@ -83,6 +87,8 @@ const data =
       },
       {
          "id": 20283,
+         "requestNo": "GD-MC-68-002962",
+         "requestType": "บันทึกแก้ไขข้อมูลนิติบุคคล",
          "registrationNo": "0107568000124",
          "taxId": "",
          "nameTh": " สอบบัญชี จำกัด",
@@ -123,6 +129,8 @@ const data =
       },
       {
          "id": 20282,
+         "requestNo": "GC-MC-68-000003",
+         "requestType": "คำขอเปลี่ยนแปลงประเภทของหลักประกัน",
          "registrationNo": "1234567890123",
          "taxId": "1111111111111",
          "nameTh": "บริษัท ทดสอบ จำกัด3",
@@ -163,6 +171,8 @@ const data =
       },
       {
          "id": 20280,
+         "requestNo": "R-MC-68-002084",
+         "requestType": "คำขอต่ออายุทะเบียนนิติบุคคล",
          "registrationNo": "0123456789011",
          "taxId": "0123456789011",
          "nameTh": "ข้อมูลทดสอบ",
@@ -203,6 +213,8 @@ const data =
       },
       {
          "id": 20279,
+         "requestNo": "R-MC-68-002084",
+         "requestType": "คำขอต่ออายุทะเบียนนิติบุคคล",
          "registrationNo": "0105567069005",
          "taxId": "0105567069005",
          "nameTh": "บริษัท อารยา จำกัด",
@@ -243,6 +255,8 @@ const data =
       },
       {
          "id": 20278,
+         "requestNo": "GD-MC-67-000863",
+         "requestType": "คำขอแจ้งรายละเอียดเกี่ยวกับหลักประกัน",
          "registrationNo": "0653567000425",
          "taxId": "0653567000425",
          "nameTh": "ห้างหุ้นส่วนจำกัด เอ็ม แอนด์ เอ็ม การบัญชี",
@@ -263,7 +277,7 @@ const data =
          "beginDate": "2024-06-21T17:00:00.000Z",
          "expiredDate": "2025-06-20T17:00:00.000Z",
          "remark": "",
-         "status": 2,
+         "status": 1,
          "updateByRequestNo": "N-MC-67-000218",
          "updateByRequestFormId": 5,
          "createDate": "2024-06-22T08:38:54.322Z",
@@ -282,6 +296,10 @@ const data =
          "isShowCustomer": 0
       },
       {
+         "id": 20276,
+         "requestNo": "N-MC-67-01281",
+
+         "requestType": "คำขอจดทะเบียนของนิติบุคคล",
          "registrationNo": "0123456789000",
          "taxId": "0123456789000",
          "nameTh": "ทดสอบบีม1",
@@ -302,7 +320,7 @@ const data =
          "beginDate": "2025-09-24T17:00:00.000Z",
          "expiredDate": "2026-09-23T17:00:00.000Z",
          "remark": "",
-         "status": 2,
+         "status": 1,
          "updateByRequestNo": "N-MC-67-000214",
          "updateByRequestFormId": 5,
          "createDate": "2024-06-16T04:28:53.187Z",
@@ -322,6 +340,8 @@ const data =
       },
       {
          "id": 20275,
+         "requestNo": "GD-MC-67-000198",
+         "requestType": "บันทึกแก้ไขข้อมูลนิติบุคคล",
          "registrationNo": "1523414325425",
          "taxId": "1523414325425",
          "nameTh": "บริษัท เทส จำกัด",
@@ -342,7 +362,7 @@ const data =
          "beginDate": "2021-01-29T17:00:00.000Z",
          "expiredDate": "2024-01-28T17:00:00.000Z",
          "remark": "",
-         "status": 2,
+         "status": 1,
          "updateByRequestNo": null,
          "updateByRequestFormId": null,
          "createDate": "2024-06-09T17:00:00.000Z",
@@ -362,6 +382,8 @@ const data =
       },
       {
          "id": 20274,
+         "requestNo": "GD-MC-67-000198",
+         "requestType": "บันทึกแก้ไขข้อมูลนิติบุคคล",
          "registrationNo": "0891230912830",
          "taxId": "0891230912830",
          "nameTh": "บริษัท บีม จำกัด",
@@ -382,7 +404,7 @@ const data =
          "beginDate": "2024-06-09T17:00:00.000Z",
          "expiredDate": "2027-06-08T17:00:00.000Z",
          "remark": "",
-         "status": 2,
+         "status": 1,
          "updateByRequestNo": null,
          "updateByRequestFormId": null,
          "createDate": "2024-06-09T17:00:00.000Z",

@@ -15,6 +15,7 @@ import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import DepositAccount from "../corporate-table/deposit-account";
 import DocumentTable from "../corporate-table/document";
 import TransactionHistory from "../corporate-table/transaction-history";
+import { Badge } from "../ui/badge";
 
 export default function CorporateView({ id }: { id: number }) {
   const router = useRouter();
@@ -103,10 +104,21 @@ export default function CorporateView({ id }: { id: number }) {
               <CardContent className="space-y-2 ">
                 <div className="grid grid-cols-1 gap-6">
                   {[
-                    { label: "ชื่อนิติบุคคล", value: corporate.nameTh || "บริษัท เอ็ม แอนด์ เอ็ม แอ็คเค้าท์ติ้ง จำกัด" },
-                    { label: "ชื่อภาษาอังกฤษ", value: corporate.nameEn || "M&M ACCOUNTING LIMITED PARTNERSHIP" },
-                    { label: "เลขทะเบียนนิติบุคคล", value: corporate.registrationNo || "0655567000425" },
-                    { label: "ประเภทการให้บริการ", value: corporate.businessTypeId || "ห้างหุ้นส่วนจำกัด" },
+                    { label: "ประเภทนิติบุคคล", value: corporate.businessTypeId || "ห้างหุ้นส่วนสามัญนิติบุคคล" },
+                    { label: "เลขประจำตัวผู้เสียภาษี", value: corporate.taxId || "0653567000425" },
+                    { label: "เบอร์โทรศัพท์", value: corporate.mobilePhone || "02-130-9037" },
+                    { label: "อีเมล", value: corporate.email || "mm.acc2567@gmail.com" },
+                    {
+                      label: "สถานะนิติบุคคล",
+                      value: (
+                        <div className="flex items-center gap-2">
+                          <Badge variant="soft" color={corporate.status === 1 ? "success" : "destructive"}>
+                            {corporate.status === 1 ? "คงอยู่" : "ขาดต่อ"}
+                          </Badge>
+                        </div>
+                      ),
+                    },
+                    { label: "หมายเหตุ", value: corporate.remark || "ข้อมูลนำเข้าระบบ" },
                   ].map(({ label, value }) => (
                     <div className="flex items-start gap-4" key={label}>
                       <label className="block text-sm font-bold text-gray-700 pt-2" style={{ width: "140px", minWidth: "140px" }}>
@@ -330,7 +342,7 @@ export default function CorporateView({ id }: { id: number }) {
                 </div>
                 <div className="pl-5 pt-3 pb-5 grid grid-cols-1 gap-6">
                   {[
-                    { label: "เงินทุนจดทะเบียน : ", value: corporate.nameEn || "M&M ACCOUNTING LIMITED PARTNERSHIP" },
+                    { label: "เงินทุนจดทะเบียน : ", value: corporate.capital || "0.00" },
                     { label: "รายได้รอบปีบัญชี : ", value: corporate.nameEn || "300" },
                   ].map(({ label, value }) => (
                     <div className="flex items-start gap-4" key={label}>
