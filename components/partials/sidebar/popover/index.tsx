@@ -1,6 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
-
+import React, { useEffect, useState, useMemo } from "react";
 import { cn, isLocationMatch, getDynamicPath } from "@/lib/utils";
 import SidebarLogo from "../common/logo";
 import MenuLabel from "../common/menu-label";
@@ -14,15 +13,16 @@ import { usePathname } from "next/navigation";
 import { useProfileStore } from "@/store/profile/useProfileStore";
 import { getMenu } from "@/config/menus";
 import { useMenuStore } from "@/store/menu/useMenuStore";
-const PopoverSidebar = ({ trans, menusConfig }: { trans: string, menusConfig: any }) => {
+const PopoverSidebar = ({ trans, menusConfig }: { trans: string; menusConfig: any }) => {
   const { collapsed, sidebarBg } = useSidebar();
   const { layout, isRtl } = useThemeStore();
   // const { profile, fetchProfile } = useProfileStore();
   // const { menus, getMenus } = useMenuStore();
-  const menusList = menusConfig?.sidebarNav?.classic || [];
+  // const menusList = menusConfig?.sidebarNav?.classic || [];
+  const menusList = useMemo(() => menusConfig?.sidebarNav?.classic || [], [menusConfig]);
+
   const [activeSubmenu, setActiveSubmenu] = useState<number | null>(null);
   const [activeMultiMenu, setMultiMenu] = useState<number | null>(null);
-
 
   const toggleSubmenu = (i: number) => {
     if (activeSubmenu === i) {
@@ -43,7 +43,7 @@ const PopoverSidebar = ({ trans, menusConfig }: { trans: string, menusConfig: an
   const pathname = usePathname();
   const locationName = getDynamicPath(pathname);
 
-  React.useEffect(() => {
+  useEffect(() => {
     let subMenuIndex: number | null = null;
     let multiMenuIndex: number | null = null;
     menusList?.map((item: any, i: number) => {
@@ -52,20 +52,25 @@ const PopoverSidebar = ({ trans, menusConfig }: { trans: string, menusConfig: an
           if (isLocationMatch(childItem.href, locationName)) {
             subMenuIndex = i;
           }
-          if (childItem?.multi_menu) {
-            childItem.multi_menu.map((multiItem: any, k: number) => {
-              if (isLocationMatch(multiItem.href, locationName)) {
-                subMenuIndex = i;
-                multiMenuIndex = j;
-              }
-            });
-          }
+          // console.log("locationName", locationName);
+          // console.log("childItem", childItem);
+
+          // if (childItem?.multi_menu) {
+          //   childItem.multi_menu.map((multiItem: any, k: number) => {
+          //     if (isLocationMatch(multiItem.href, locationName)) {
+          //       subMenuIndex = i;
+          //       multiMenuIndex = j;
+          //     }
+          //   });
+          // }
         });
       }
     });
+
     setActiveSubmenu(subMenuIndex);
+    console.log("subMenuIndex", subMenuIndex);
     setMultiMenu(multiMenuIndex);
-  }, [locationName]);
+  }, [locationName, menusList]);
 
   return (
     <div

@@ -5,13 +5,15 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-
-
-
 export const isLocationMatch = (
   targetLocation: any,
   locationName: any
 ): boolean => {
+  console.log("isLocationMatch", {
+    targetLocation,
+    locationName,
+  });
+
   return (
     locationName === targetLocation ||
     locationName.startsWith(`${targetLocation}/`)
