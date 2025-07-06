@@ -9,10 +9,10 @@ export const isLocationMatch = (
   targetLocation: any,
   locationName: any
 ): boolean => {
-  console.log("isLocationMatch", {
-    targetLocation,
-    locationName,
-  });
+  // console.log("isLocationMatch", {
+  //   targetLocation,
+  //   locationName,
+  // });
 
   return (
     locationName === targetLocation ||

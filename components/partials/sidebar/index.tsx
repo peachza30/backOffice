@@ -43,7 +43,6 @@ const Sidebar = ({ trans }: { trans: string }) => {
         }
       }
     };
-
     initializeProfile();
   }, [menus, loading]); // Depend on menus and loading state
 

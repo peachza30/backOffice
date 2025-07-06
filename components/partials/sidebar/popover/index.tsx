@@ -52,23 +52,19 @@ const PopoverSidebar = ({ trans, menusConfig }: { trans: string; menusConfig: an
           if (isLocationMatch(childItem.href, locationName)) {
             subMenuIndex = i;
           }
-          // console.log("locationName", locationName);
-          // console.log("childItem", childItem);
-
-          // if (childItem?.multi_menu) {
-          //   childItem.multi_menu.map((multiItem: any, k: number) => {
-          //     if (isLocationMatch(multiItem.href, locationName)) {
-          //       subMenuIndex = i;
-          //       multiMenuIndex = j;
-          //     }
-          //   });
-          // }
+          if (childItem?.multi_menu) {
+            childItem.multi_menu.map((multiItem: any, k: number) => {
+              if (isLocationMatch(multiItem.href, locationName)) {
+                subMenuIndex = i;
+                multiMenuIndex = j;
+              }
+            });
+          }
         });
       }
     });
 
     setActiveSubmenu(subMenuIndex);
-    console.log("subMenuIndex", subMenuIndex);
     setMultiMenu(multiMenuIndex);
   }, [locationName, menusList]);
 
