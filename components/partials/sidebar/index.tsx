@@ -51,6 +51,7 @@ const Sidebar = ({ trans }: { trans: string }) => {
     if (profile && menus && !loading) {
       try {
         const newMenusConfig = getMenu(profile);
+        console.log("newMenusConfig", newMenusConfig);
         setMenusConfig(newMenusConfig);
       } catch (error) {
         console.error("Failed to generate menu config:", error);

@@ -43,26 +43,36 @@ const PopoverSidebar = ({ trans, menusConfig }: { trans: string; menusConfig: an
   const pathname = usePathname();
   const locationName = getDynamicPath(pathname);
 
+  // PopoverSidebar.tsx
   useEffect(() => {
     let subMenuIndex: number | null = null;
     let multiMenuIndex: number | null = null;
-    menusList?.map((item: any, i: number) => {
-      if (item?.child) {
-        item.child.map((childItem: any, j: number) => {
-          if (isLocationMatch(childItem.href, locationName)) {
-            subMenuIndex = i;
+
+    outer: for (let i = 0; i < menusList.length; i++) {
+      const item = menusList[i];
+      if (!item.child) continue;
+
+      for (let j = 0; j < item.child.length; j++) {
+        const child = item.child[j];
+
+        // ⬇️ ตรงเมนูชั้น 2
+        if (isLocationMatch(child.href, locationName)) {
+          subMenuIndex = i;
+          break outer;
+        }
+
+        // ⬇️ ตรงเมนูชั้น 3
+        if (child.multi_menu) {
+          for (const multi of child.multi_menu) {
+            if (isLocationMatch(multi.href, locationName)) {
+              subMenuIndex = i;
+              multiMenuIndex = j;
+              break outer;
+            }
           }
-          if (childItem?.multi_menu) {
-            childItem.multi_menu.map((multiItem: any, k: number) => {
-              if (isLocationMatch(multiItem.href, locationName)) {
-                subMenuIndex = i;
-                multiMenuIndex = j;
-              }
-            });
-          }
-        });
+        }
       }
-    });
+    }
 
     setActiveSubmenu(subMenuIndex);
     setMultiMenu(multiMenuIndex);

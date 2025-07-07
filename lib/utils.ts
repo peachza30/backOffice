@@ -6,18 +6,20 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export const isLocationMatch = (
-  targetLocation: any,
-  locationName: any
+  targetLocation: string | undefined | null,
+  locationName: string | undefined | null
 ): boolean => {
-  // console.log("isLocationMatch", {
-  //   targetLocation,
-  //   locationName,
-  // });
+  // 💡 1) ถ้า target ว่าง → ไม่จับคู่
+  if (!targetLocation) return false;
 
-  return (
-    locationName === targetLocation ||
-    locationName.startsWith(`${targetLocation}/`)
-  );
+  // 💡 2) ตัด slash ท้าย เพื่อเทียบแบบเต็มเส้นทาง
+  const clean = (s: string) => s.replace(/\/+$/, "");
+
+  const target = clean(targetLocation);
+  const current = clean(locationName ?? "");
+
+  // 💡 3) เทียบตรง หรือเป็น prefix ตาม segment
+  return current === target || current.startsWith(`${target}/`);
 };
 
 export const RGBToHex = (r: number, g: number, b: number): string => {
