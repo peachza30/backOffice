@@ -176,7 +176,7 @@ const MenuForm = ({ mode }: { mode: "create" | "edit" }) => {
       </div>
       <div className="pt-5 pl-20 pr-20">
         <Label className="mb-3" htmlFor="serviceName">
-          PART MENU <span className="text-warning">*</span>
+          PATH MENU <span className="text-warning">*</span>
         </Label>
         <InputGroup>
           <InputGroupText>

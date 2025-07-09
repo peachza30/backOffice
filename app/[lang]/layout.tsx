@@ -8,7 +8,6 @@ import AuthProvider from "@/provider/auth.provider";
 import "flatpickr/dist/themes/light.css";
 import DirectionProvider from "@/provider/direction.provider";
 
-
 export const metadata = {
   title: {
     default: siteConfig.name,
@@ -17,18 +16,18 @@ export const metadata = {
   description: siteConfig.description,
 };
 
-
 export default async function RootLayout({ children, params: { lang } }: { children: React.ReactNode; params: { lang: string } }) {
- 
   return (
     <html lang={lang}>
       {/* <AuthProvider> */}
+      <body suppressHydrationWarning>
         <TanstackProvider>
           <Providers>
             <DirectionProvider lang={lang}>{children}</DirectionProvider>
           </Providers>
         </TanstackProvider>
-      {/* </AuthProvider> */}
+        {/* </AuthProvider> */}
+      </body>
     </html>
   );
 }

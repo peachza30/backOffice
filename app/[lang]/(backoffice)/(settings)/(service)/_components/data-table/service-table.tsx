@@ -46,13 +46,13 @@ const responsiveStyles = {
 };
 
 const columns: ColumnDef<Service>[] = [
-  {
-    id: "select",
-    header: ({ table }) => <Checkbox checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")} onCheckedChange={value => table.toggleAllPageRowsSelected(!!value)} aria-label="Select all" />,
-    cell: ({ row }) => <Checkbox checked={row.getIsSelected()} onCheckedChange={value => row.toggleSelected(!!value)} aria-label="Select row" />,
-    enableSorting: false,
-    enableHiding: false,
-  },
+  // {
+  //   id: "select",
+  //   header: ({ table }) => <Checkbox checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")} onCheckedChange={value => table.toggleAllPageRowsSelected(!!value)} aria-label="Select all" />,
+  //   cell: ({ row }) => <Checkbox checked={row.getIsSelected()} onCheckedChange={value => row.toggleSelected(!!value)} aria-label="Select row" />,
+  //   enableSorting: false,
+  //   enableHiding: false,
+  // },
   {
     accessorKey: "id", // Fixed: use actual property name
     header: "ID",
@@ -368,7 +368,7 @@ export function ServiceDataTable() {
 
         {/* Page Size Selector */}
         <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">Rows per page</span>
+          <span className="text-sm text-muted-foreground whitespace-nowrap">Rows per page</span>
           <Select
             value={currentPageSizeValue}
             onValueChange={(newValue: any) => {

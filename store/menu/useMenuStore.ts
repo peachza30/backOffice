@@ -91,8 +91,7 @@ export const useMenuStore = create<MenuStore>()(
       }
     })),
     {
-      name: 'menu-store', // unique name for localStorage key
-      // Only persist the mode, not the entire state
+      name: 'menu-store',
       partialize: (state) => ({ mode: state.mode }),
     }
   )

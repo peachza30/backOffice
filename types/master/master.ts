@@ -48,8 +48,8 @@ interface FetchParams {
   order?: 'ASC' | 'DESC';
 }
 interface ApiMetadata {
-  page: string;
-  limit: string;
+  page: number;
+  limit: number;
   total: number;
   last_page: number;
 }

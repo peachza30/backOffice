@@ -1,59 +1,86 @@
-// // ── store/queue/useQueueStore.ts ───────────────────────────────────
-// import { create } from 'zustand';
-// import { persist } from 'zustand/middleware';
-// import { subscribeWithSelector } from 'zustand/middleware';
+"use client";
 
-// import * as queueService from '@/services/queue/queue.service'; // ← adjust to your path
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import { subscribeWithSelector } from "zustand/middleware";
 
-// export const useQueueStore = create<QueueStore>()(
-//    persist(
-//       subscribeWithSelector((set) => ({
-//          // --- state ---------------------------------------------------
-//          members: [] as QueueStore['members'],
-//          member: null,
-//          metadata: null,
-//          mode: null,
-//          loading: false,
-//          error: null,
+import {
+  createQueueService,
+  type QueueSocketParams,
+  type QueueService,
+} from "@/services/queue/queue.service";
 
-//          // --- actions -------------------------------------------------
-//          setMode: (mode) => set({ mode }),
+/* -------------------------------------------------------------------- */
+/* Zustand state shape                                                  */
+interface QueueStore {
+  members: MemberEventData[];
+  metadata: ApiMetadata | null;
+  loading: boolean;
+  error: string | null;
 
-//          fetchMembers: async () => {
-//             set({ loading: true, error: null });
-//             try {
-//                    const s = io('https://queue-dev.tfac.or.th/socket');
+  /* actions */
+  connect: (params?: QueueSocketParams) => void;
+  disconnect: () => void;
+  resend: (payload: unknown) => Promise<void>;
+}
 
-//                set({
-//                   members: res.data,        // MemberEvent[]
-//                   metadata: res.metadata,    // ApiMetadata
-//                   loading: false,
-//                });
-//             } catch (err) {
-//                set({
-//                   error: err instanceof Error ? err.message : 'Unexpected error',
-//                   loading: false,
-//                });
-//             }
-//          },
+/* -------------------------------------------------------------------- */
+export const useQueueStore = create<QueueStore>()(
+  persist(
+    subscribeWithSelector((set, get) => {
+      /*  service instance ปัจจุบัน (อยู่นอก state → ไม่ trigger re-render) */
+      let svc: QueueService | null = null;
 
-//          fetchMember: async (id: number) => {
-//             set({ loading: true, error: null });
-//             try {
-//                const res = await queueService.findOne(id);
-//                set({ member: res.data, loading: false });
-//             } catch (err) {
-//                set({
-//                   error: err instanceof Error ? err.message : 'Unexpected error',
-//                   loading: false,
-//                });
-//             }
-//          },
-//       })),
-//       {
-//          name: 'queue-store',
-//          // Persist only what you really need; here just `mode`
-//          partialize: (state) => ({ mode: state.mode }),
-//       },
-//    ),
-// );
+      return {
+        /* ---- state ----------------------------------------------------- */
+        members: [],
+        metadata: null,
+        loading: false,
+        error: null,
+
+        /* ---- actions --------------------------------------------------- */
+        connect: (params?: QueueSocketParams) => {
+          if (svc) return;                        // already connected
+
+          set({ loading: true, error: null });
+
+          svc = createQueueService(params ?? {}, {
+            onLogs: (logs, meta) =>
+              set({
+                members: logs,
+                metadata: meta,
+                loading: false,
+              }),
+
+            onLog: log =>
+              set(state => ({
+                members: [log, ...state.members].slice(0, 50),
+              })),
+
+            onError: err =>
+              set({ error: err.message, loading: false }),
+          });
+          console.log("svc", svc);
+
+        },
+
+        disconnect: () => {
+          svc?.disconnect();
+          svc = null;
+        },
+
+        resend: async payload => {
+          if (!svc)
+            throw new Error("queue service not connected. call connect() first");
+          await svc.resend(payload);
+        },
+      };
+    }),
+    {
+      name: "queue-store",
+      partialize: state => ({
+        metadata: state.metadata, // เก็บเฉพาะ meta ใน localStorage
+      }),
+    },
+  ),
+);

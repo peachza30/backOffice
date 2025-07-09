@@ -2,22 +2,6 @@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Icon } from "@iconify/react";
-interface ConfirmDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onConfirm: () => void;
-  dialogConfig: {
-    title?: string;
-    icon?: string;
-    class?: "primary" | "default" | "destructive" | "success" | "info" | "warning" | "secondary" | "dark";
-    color?: string;
-    size?: "sm" | "md" | "lg" | "xl";
-    body?: string;
-    sub?: string;
-    confirmButton?: string | "Confirm";
-    cancelButton?: string | "Cancel";
-  };
-}
 
 const ConfirmDialog = ({ open, onOpenChange, onConfirm, dialogConfig }: ConfirmDialogProps) => {
   return (

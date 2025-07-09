@@ -1,324 +1,240 @@
 "use client";
-import { useCallback, useEffect, useState } from "react";
 
-import { io, Socket } from "socket.io-client";
+import { useEffect, useMemo, useState } from "react";
+import { ColumnFiltersState, SortingState, VisibilityState, flexRender, getCoreRowModel, getFilteredRowModel, getSortedRowModel, useReactTable, type ColumnDef } from "@tanstack/react-table";
 
-import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/app/[lang]/(backoffice)/(settings)/(service)/_components/ui/pagination";
-import { ArrowUpDown, ChevronDown, MoreHorizontal, Search } from "lucide-react";
-import { ColumnDef, ColumnFiltersState, SortingState, VisibilityState, flexRender, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, getSortedRowModel, useReactTable } from "@tanstack/react-table";
-import { Copy, Edit, Eye, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import TablePagination from "@/app/[lang]/(backoffice)/(settings)/(service)/_components/pagination/default-pagi";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { User, data } from "./data";
-import BasicSelect from "../react-select/basic-select";
-import MergedInputGroup from "../input2/merged-input-group";
-import OutlineButton from "../button/outline-button";
 import { Icon } from "@iconify/react";
-import { cn } from "@/lib/utils";
-import { useServiceStore } from "@/store/service/useServiceStore";
-import { useUserStore } from "@/store/users/useUserStore";
-import { Card } from "../ui/card";
-import IconButton from "../button/icon-button";
-import { useRouter } from "next/navigation";
-// import Select from "react-select";
-import { InputGroup, InputGroupButton, InputGroupText } from "@/components/ui/input-group";
-import ConfirmDialog from "../dialog/confirm-dialog";
-import SuccessDialog from "../dialog/success-dialog";
-import { bo, Q, s } from "@fullcalendar/core/internal-common";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
-const responsiveStyles = {
-  container: provided => ({
-    ...provided,
-    width: "100%",
-    maxWidth: "500px",
-    minWidth: "200px",
-  }),
-  control: provided => ({
-    ...provided,
-    width: "100%",
-  }),
-};
+import { useQueueStore } from "@/store/queue/useQueueStore";
+import { Checkbox } from "@radix-ui/react-checkbox";
+import ReportsChart from "../queue-report/reports-chart";
+import { useTheme } from "next-themes";
+import { useThemeStore } from "@/store";
 
-const columns: ColumnDef<MemberEvent>[] = [
-  {
-    id: "select",
-    header: ({ table }) => <Checkbox checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")} onCheckedChange={value => table.toggleAllPageRowsSelected(!!value)} aria-label="Select all" />,
-    cell: ({ row }) => <Checkbox checked={row.getIsSelected()} onCheckedChange={value => row.toggleSelected(!!value)} aria-label="Select row" />,
-    enableSorting: false,
-    enableHiding: false,
-  },
-  {
-    accessorKey: "id", // Fixed: use actual property name
-    header: "ID",
-    cell: ({ row }) => {
-      const serviceId = row.original.id;
-      return (
-        <div className="font-medium text-card-foreground/80">
-          <div className="flex space-x-3 rtl:space-x-reverse items-center">
-            <p>{serviceId}</p>
-          </div>
-        </div>
-      );
-    },
-  },
-  {
-    accessorKey: "event_type", // Fixed: use actual property name
-    header: ({ column }) => {
-      return (
-        <div className="flex items-center space-x-2">
-          <span className="text-sm font-medium">EVENT TYPE</span>
-        </div>
-      );
-    },
-    cell: ({ row }) => <div className="whitespace-nowrap font-medium">{row.getValue("event_type")}</div>,
-  },
-  {
-    accessorKey: "id_no", // Fixed: use actual property name
-    header: ({ column }) => {
-      return (
-        <div className="flex items-center space-x-2">
-          <span className="text-sm font-medium">ID CARD</span>
-        </div>
-      );
-    },
-    cell: ({ row }) => <div className="whitespace-nowrap font-medium">{row.getValue("id_no")}</div>,
-  },
-  {
-    accessorKey: "service_description", // Fixed: use actual property name
-    header: "SERVICE DESCRIPTION",
-    cell: ({ row }) => <div className="max-w-[300px] truncate">{row.getValue("service_description")}</div>,
-  },
-  {
-    accessorKey: "status", // Fixed: use actual property name
-    header: () => <div className="text-center">STATUS</div>,
-    cell: ({ row }) => {
-      const status = row.getValue("status") as string;
-      return (
-        <div className="text-center font-medium">
-          <Badge variant="soft" color={status === "success" ? "success" : status === "failed" ? "destructive" : status === "resent" ? "warning" : "secondary"} className="capitalize">
-            {status === "success" ? "Active" : status === "failed" ? "Inactive" : status === "resent" ? "Pending" : "Unknown"}
-          </Badge>
-        </div>
-      );
-    },
-  },
-  {
-    accessorKey: "updated_at",
-    header: () => <div className="text-center">LAST MODIFIED</div>,
-    cell: ({ row }) => {
-      const { usersById } = useUserStore(); // ✅ safe: just reads store
-      const updatedAt = row.original.updated_at ?? row.original.created_at;
-      const updatedBy = row.original.updated_by ?? row.original.created_by;
+import { themes } from "@/config/thems";
+import { cn } from "@/lib/utils";
 
-      const user = updatedBy ? usersById[updatedBy] : null;
-      const userName = user ? `${user.first_name}.${user.last_name?.slice(0, 2)}` : "None Editor";
+/* ── helper สำหรับ badge สี ───────────────────────────────────────── */
+const statusToColor = (s: MemberStatus) => (s === "success" ? "success" : s === "failed" ? "destructive" : s === "pending" ? "warning" : "secondary");
 
-      return (
-        <div className="text-center font-medium">
-          <div className="text-xs text-muted-foreground">{userName}</div>
-          <div className="text-sm">
-            {new Intl.DateTimeFormat("th-TH", {
-              year: "numeric",
-              month: "numeric",
-              day: "numeric",
-              hour: "2-digit",
-              minute: "2-digit",
-              second: "2-digit",
-              hour12: false,
-            }).format(new Date(updatedAt))}
-          </div>
-        </div>
-      );
-    },
-  },
-  {
-    id: "action",
-    enableHiding: false,
-    header: () => <div className="text-center">ACTION</div>,
-    cell: ({ row }) => {
-      const service = row.original;
-      const { setMode, deleteService } = useServiceStore();
-      const [openModal, setOpenModal] = useState(false);
-      const [openSuccessModal, setOpenSuccessModal] = useState(false);
-      let confirmDialogConfig = {};
-      let successDialogConfig = {};
-      confirmDialogConfig = {
-        title: "Confirm Delete Service?",
-        icon: "stash:question",
-        class: "destructive",
-        color: "#EF4444",
-        body: "Do you want to delete this service?",
-        sub: "Deleting this item is irreversible. Are you sure you want to continue?",
-        confirmButton: "Yes, Delete",
-        cancelButton: "Cancel",
-      };
-
-      successDialogConfig = {
-        icon: "solar:verified-check-outline",
-        body: "Delete service successfully.",
-        color: "#22C55E",
-      };
-
-      const router = useRouter();
-      const handleDelete = () => {
-        setOpenModal(true);
-      };
-      const handleConfirm = () => {
-        setOpenSuccessModal(true);
-        setOpenModal(false);
-        deleteService(service.id, {
-          search: "",
-          status: "",
-          page: 1,
-          limit: 10,
-          sort: "created_at",
-          order: "DESC",
-        });
-      };
-
-      return (
-        <div className="flex items-center justify-end gap-1">
-          {openModal && <ConfirmDialog open={openModal} onOpenChange={setOpenModal} onConfirm={handleConfirm} dialogConfig={confirmDialogConfig} />}
-          {openSuccessModal && <SuccessDialog open={openSuccessModal} onOpenChange={setOpenSuccessModal} dialogConfig={successDialogConfig} />}
-          {/* Copy Service Code */}
-          {/* <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => navigator.clipboard.writeText(service.service_code)} title="Copy service code">
-            <Copy className="h-4 w-4" />
-          </Button> */}
-          {/* View Details */}
-          <Button
-            size="icon"
-            onClick={() => {
-              setMode("view");
-              router.push(`/manage-services/${service.id}`);
-            }}
-            color="info"
-            variant="soft"
-          >
-            <Icon icon="fluent:eye-24-filled" width="24" height="24" />
-          </Button>
-          {/* Edit Service */}
-          <p className="p-1 text-gray-300">|</p>
-          <Button
-            size="icon"
-            onClick={() => {
-              setMode("edit");
-              router.push(`/manage-services/${service.id}`);
-            }}
-            color="warning"
-            variant="soft"
-          >
-            <Icon icon="hugeicons:pencil-edit-01" width="24" height="24" />
-          </Button>
-
-          {/* Delete Service */}
-          <p className="p-1 text-gray-300">|</p>
-          <Card title="Icon Buttons">
-            <div className="flex flex-wrap gap-3 lg:gap-5">
-              <Button
-                size="icon"
-                onClick={() => {
-                  handleDelete();
-                  setOpenModal(true);
-                }}
-                color="destructive"
-                variant="soft"
-              >
-                <Icon icon="hugeicons:delete-02" width="24" height="24" />
-              </Button>
-            </div>
-          </Card>
-        </div>
-      );
-    },
-  },
-];
-
-export function MemberEventDataTable() {
+/* ------------------------------------------------------------------ */
+export default function MemberEventDataTable() {
+  /* 1. Local UI state ------------------------------------------------ */
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
-  const { services, metadata, fetchService } = useServiceStore();
-  const { fetchUser } = useUserStore();
-  const [search, setSearch] = useState("");
-  const [statusVal, setStatusVal] = useState("");
-  const [pageSize, setPageSize] = useState(5);
-  const [globalFilter, setGlobalFilter] = useState("");
-  const [loading, setLoading] = useState(false);
+
+  const [search, setSearch] = useState(""); // คำค้น
+  const [statusVal, setStatusVal] = useState(""); // สถานะคำขอ
+  const [requestTypeVal, setRequestTypeVal] = useState(""); // ประเภทคำขอ
+  const [startDate, setStartDate] = useState(""); // วันที่เริ่มต้น (yyyy-mm-dd)
+  const [endDate, setEndDate] = useState(""); // วันที่สิ้นสุด
   const [fetchClear, setFetchClear] = useState(false);
-
-
-  const useWebhookLogs = () => {
-    const [logs, setLogs] = useState<MemberEvent[]>([]);
-    const [socket, setSocket] = useState<Socket | null>(null);
-
-    /* mount / unmount */
-    useEffect(() => {
-      const s = io("https://queue-dev.tfac.or.th/socket");
-      setSocket(s);
-
-      s.emit("get-webhook-logs");
-      s.on("webhook-logs", (data: MemberEvent[]) => setLogs(data));
-      s.on("webhook-log", (log: MemberEvent) => setLogs(prev => [log, ...prev].slice(0, 50)));
-
-      return () => {
-        s.disconnect();
-        setSocket(null);
-      };
-    }, []);
-
-    /* resend wrapper */
-    const resendWebhook = useCallback(
-      async (payload: unknown) => {
-        try {
-          const res = await fetch("https://queue-dev.tfac.or.th/event/resend", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ payload }),
-          });
-
-          if (!res.ok) {
-            throw new Error(await res.text());
-          }
-
-          socket?.emit("get-webhook-logs");
-        } catch (err: unknown) {
-          console.error(err);
-          alert(`❌ ${err instanceof Error ? err.message : "Unknown error"}`);
-        }
-      },
-      [socket]
-    );
-
-    return { logs, resendWebhook };
-  };
 
   const status: { value: string; label: string }[] = [
     { value: "", label: "--- All ---" },
     { value: "A", label: "Active" },
     { value: "I", label: "Inactive" },
   ];
-  const currentStatusValue = status.find(opt => opt.value === statusVal)?.value || "";
 
+  const { theme: config, setTheme: setConfig } = useThemeStore();
+  const { theme: mode } = useTheme();
+  const theme = themes.find(theme => theme.name === config);
+
+  const primary = `hsl(${theme?.cssVars[mode === "dark" ? "dark" : "light"].primary})`;
+  const warning = `hsl(${theme?.cssVars[mode === "dark" ? "dark" : "light"].warning})`;
+  const success = `hsl(${theme?.cssVars[mode === "dark" ? "dark" : "light"].success})`;
+  const info = `hsl(${theme?.cssVars[mode === "dark" ? "dark" : "light"].info})`;
+
+  const allUsersSeries = [
+    {
+      data: [90, 70, 85, 60, 80, 70, 90, 75, 60, 80],
+    },
+  ];
+  const conversationSeries = [
+    {
+      data: [80, 70, 65, 40, 40, 100, 100, 75, 60, 80],
+    },
+  ];
+  const eventCountSeries = [
+    {
+      data: [20, 70, 65, 60, 40, 60, 90, 75, 60, 40],
+    },
+  ];
+  const newUserSeries = [
+    {
+      data: [20, 70, 65, 40, 100, 60, 100, 75, 60, 80],
+    },
+  ];
+  const tabsTrigger = [
+    {
+      value: "all",
+      text: "all user",
+      total: "10,234",
+      color: "primary",
+    },
+    {
+      value: "event",
+      text: "Event Count",
+      total: "536",
+      color: "warning",
+    },
+    {
+      value: "conversation",
+      text: "conversations",
+      total: "21",
+      color: "success",
+    },
+    {
+      value: "newuser",
+      text: "New User",
+      total: "3321",
+      color: "info",
+    },
+  ];
+  const tabsContentData = [
+    {
+      value: "all",
+      series: allUsersSeries,
+      color: primary,
+    },
+    {
+      value: "event",
+      series: eventCountSeries,
+      color: warning,
+    },
+    {
+      value: "conversation",
+      series: conversationSeries,
+      color: success,
+    },
+    {
+      value: "newuser",
+      series: newUserSeries,
+      color: info,
+    },
+  ];
+
+  /* 2. Zustand store -------------------------------------------------- */
+  const { members, connect, resend } = useQueueStore();
+  // console.log("members", members);
+  /* 3. Connect socket once on mount ---------------------------------- */
   useEffect(() => {
-    if (fetchClear && search === "" && statusVal === "") {
-      fetchData();
-      setFetchClear(false); // reset
+    connect({ page: 1, perPage: 20 });
+  }, [connect]);
+
+  const fetchData = async () => {
+    // setLoading(true);
+    // const sortObj = sorting[0] || {}; // assumes single-column sort
+    // const currentPage = pageIndex !== undefined ? pageIndex : metadata ? Number(metadata.page) - 1 : 0;
+    // const currentPageSize = metadata ? Number(metadata.limit) : 5;
+
+    try {
+      // await fetchCorporateRequests({
+      //   search: search || "",
+      //   status: statusVal || "",
+      //   page: currentPage + 1, // Convert 0-based to 1-based for API
+      //   limit: currentPageSize,
+      //   sort: sortObj?.id || "created_at",
+      //   order: sortObj?.desc ? "DESC" : "ASC",
+      // });
+      // Update metadata from API response
+    } catch (error) {
+      console.error("Fetch failed:", error);
+    } finally {
+      // setLoading(false);
     }
-  }, [search, statusVal, fetchClear]);
+  };
+  const handleClear = () => {
+    setSearch("");
+    setStatusVal("");
+    setFetchClear(true);
+  };
+  /* 4. สร้าง columns (useMemo เพื่อไม่สร้างใหม่ทุก render) ---------- */
+  const columns = useMemo<ColumnDef<MemberEventData>[]>(
+    () => [
+      {
+        id: "select",
+        header: ({ table }) => <Checkbox checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")} onCheckedChange={value => table.toggleAllPageRowsSelected(!!value)} aria-label="Select all" />,
+        cell: ({ row }) => <Checkbox checked={row.getIsSelected()} onCheckedChange={value => row.toggleSelected(!!value)} aria-label="Select row" />,
+        enableSorting: false,
+        enableHiding: false,
+      },
+      {
+        id: "row-index",
+        header: "NO.",
+        cell: ({ row }) => row.index + 1,
+      },
+      {
+        accessorKey: "id",
+        header: "EVENT ID",
+        cell: ({ row }) => <span className="font-mono">{row.getValue("id")}</span>,
+      },
+      { accessorKey: "event_type", header: "EVENT TYPE" },
+      {
+        accessorKey: "error_message",
+        header: "ERROR MESSAGE",
+        cell: ({ row }) => <span className="max-w-[300px] truncate block">{row.getValue("error_message")}</span>,
+      },
+      {
+        accessorKey: "created_at",
+        header: "CREATED AT",
+        cell: ({ row }) => new Date(row.getValue<string>("created_at")).toLocaleString("th-TH"),
+      },
+      {
+        accessorKey: "received_at",
+        header: "RECEIVED AT",
+      },
+      {
+        accessorKey: "status",
+        header: "STATUS",
+        cell: ({ row }) => {
+          const status = row.getValue<MemberStatus>("status");
+          return (
+            <Badge variant="soft" color={statusToColor(status)} className="capitalize">
+              {status}
+            </Badge>
+          );
+        },
+      },
+      {
+        id: "action",
+        header: "ACTION",
+        enableSorting: false,
+        cell: ({ row }) => {
+          const log = row.original;
+          return (
+            <div className="flex items-center gap-2">
+              {/* View detail */}
+              <Button size="icon" variant="soft" color="info">
+                <Icon icon="fluent:eye-24-filled" width={20} height={20} />
+              </Button>
 
-  const { logs, resendWebhook } = useWebhookLogs();
-  console.log("logs", logs);
+              {/* Resend – show only when failed */}
+              {log.status === "failed" && (
+                <Button size="icon" variant="soft" color="warning" onClick={() => resend(log.payload)}>
+                  <Icon icon="solar:refresh-line-duotone" width={20} height={20} />
+                </Button>
+              )}
+            </div>
+          );
+        },
+      },
+    ],
+    [resend] // dependency
+  );
 
+  /* 5. React-Table instance ------------------------------------------ */
   const table = useReactTable({
-    data: logs || [],
+    data: members,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -329,282 +245,153 @@ export function MemberEventDataTable() {
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
     manualPagination: true, // Tell React Table we're handling pagination
-    pageCount: metadata?.last_page,
+    // pageCount: metadata?.last_page,
     state: {
       sorting,
       columnFilters,
       columnVisibility,
       rowSelection,
-      pagination: {
-        pageIndex: Number(metadata?.page) - 1,
-        pageSize: Number(metadata?.limit),
-      },
+      // pagination: {
+      //   pageIndex: Number(metadata?.page) - 1,
+      //   pageSize: Number(metadata?.limit),
+      // },
     },
   });
-  const pageCount = table.getPageCount();
-  const pageIndex = table.getState().pagination.pageIndex;
 
-  const fetchData = async (pageIndex?: number) => {
-    setLoading(true);
-    const sortObj = sorting[0] || {}; // assumes single-column sort
-    const currentPage = pageIndex !== undefined ? pageIndex : metadata ? Number(metadata.page) - 1 : 0;
-    const currentPageSize = metadata ? Number(metadata.limit) : 5;
-
-    try {
-      await fetchService({
-        search: search || "",
-        status: statusVal || "",
-        page: currentPage + 1, // Convert 0-based to 1-based for API
-        limit: currentPageSize,
-        sort: sortObj?.id || "created_at",
-        order: sortObj?.desc ? "DESC" : "ASC",
-      });
-      // Update metadata from API response
-    } catch (error) {
-      console.error("Fetch failed:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-  const handlePageChange = (newPageIndex: number) => {
-    fetchData(newPageIndex);
-  };
-  const handlePageSizeChange = (newPageSize: number) => {
-    fetchData(0);
-  };
-
-  const PaginationComponent = () => {
-    const currentPage = metadata ? Number(metadata.page) - 1 : 0; // Convert to 0-based
-    const totalPages = metadata?.last_page || 1;
-    const total = metadata?.total || 0;
-    const limit = metadata?.limit || "5";
-    const canPreviousPage = currentPage > 0;
-    const canNextPage = currentPage < totalPages - 1;
-
-    const pageSizeOptions = [
-      { value: "5", label: "5" },
-      { value: "10", label: "10" },
-      { value: "20", label: "20" },
-      { value: "50", label: "50" },
-    ];
-    const currentPageSizeValue = pageSizeOptions.find(opt => opt.value === limit)?.value || pageSizeOptions[0].value;
-    return (
-      <div className="flex items-center justify-between flex-wrap gap-4 px-4 py-4">
-        {/* Row selection info */}
-        {/* <div className="flex-1 text-sm text-muted-foreground whitespace-nowrap">
-          {table.getFilteredSelectedRowModel().rows.length} of {total} row(s) selected.
-        </div> */}
-
-        {/* Page Size Selector */}
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">Rows per page</span>
-          <Select
-            value={currentPageSizeValue}
-            onValueChange={(newValue: any) => {
-              fetchService({
-                search: search || "",
-                status: statusVal || "",
-                page: 1,
-                limit: newValue,
-                sort: "created_at",
-                order: "ASC",
-              });
-            }}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select page size" />
-            </SelectTrigger>
-            <SelectContent>
-              {pageSizeOptions.map(opt => (
-                <SelectItem key={opt.value} value={opt.value}>
-                  {opt.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Page Info */}
-        {/* <div className="text-sm text-muted-foreground">
-          Page {metadata?.page || 1} of {totalPages} ({total} total items)
-        </div> */}
-
-        {/* Pagination */}
-        <div className="flex-1 text-sm text-muted-foreground whitespace-nowrap ">
-          <Pagination>
-            <PaginationContent>
-              {/* Previous Button */}
-              <PaginationItem>
-                <PaginationPrevious
-                  href="#"
-                  onClick={e => {
-                    e.preventDefault();
-                    if (canPreviousPage) {
-                      handlePageChange(currentPage - 1);
-                    }
-                  }}
-                  className={!canPreviousPage ? "pointer-events-none opacity-50" : ""}
-                />
-              </PaginationItem>
-
-              {/* Page Numbers */}
-              {Array.from({ length: totalPages }, (_, i) => (
-                <PaginationItem key={`page-${i}`}>
-                  <PaginationLink
-                    href="#"
-                    isActive={currentPage === i}
-                    onClick={e => {
-                      e.preventDefault();
-                      handlePageChange(i);
-                    }}
-                  >
-                    {i + 1}
-                  </PaginationLink>
-                </PaginationItem>
-              ))}
-
-              {/* Next Button */}
-              <PaginationItem>
-                <PaginationNext
-                  href="#"
-                  onClick={e => {
-                    e.preventDefault();
-                    if (canNextPage) {
-                      handlePageChange(currentPage + 1);
-                    }
-                  }}
-                  className={!canNextPage ? "pointer-events-none opacity-50" : ""}
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
-        </div>
-      </div>
-    );
-  };
-
-  // 8. Update your useEffect to handle initial load
-  useEffect(() => {
-    fetchData(0); // Load first page on component mount
-  }, []);
-
-  const handleClear = () => {
-    setSearch("");
-    setStatusVal("");
-    setFetchClear(true);
-  };
-
+  /* 6. UI ------------------------------------------------------------- */
   return (
     <>
-      {/* <div className="flex items-center flex-wrap gap-2  px-4">
-        <Input
-          placeholder="Filter emails..."
-          value={(table.getColumn("email")?.getFilterValue() as string) || ""}
-          onChange={(event) =>
-            table.getColumn("email")?.setFilterValue(event.target.value)
-          }
-          className="max-w-sm min-w-[200px] h-10"
-        />
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline">
-              Columns <ChevronDown className="ml-2 h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {table
-              .getAllColumns()
-              .filter((column) => column.getCanHide())
-              .map((column) => {
-                return (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    className="capitalize"
-                    checked={column.getIsVisible()}
-                    onCheckedChange={(value) =>
-                      column.toggleVisibility(!!value)
-                    }
-                  >
-                    {column.id}
-                  </DropdownMenuCheckboxItem>
-                );
-              })}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div> */}
-      <div className="p-1 md:p-5 grid grid-cols-[auto_1fr_1fr_auto] gap-4 items-center text-default-900">
-        <p className="">Status</p>
-        <div className="">
-          <Select
-            value={currentStatusValue}
-            onValueChange={(newValue: string) => {
-              setStatusVal(newValue);
-            }}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="--All--" />
-            </SelectTrigger>
-            <SelectContent>
-              {status.map(opt => (
-                <SelectItem key={opt.value} value={opt.value}>
-                  {opt.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+      {/* ── Filter row -------------------------------------------------- */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-5 text-sm text-default-900">
+        {/* ประเภทคำขอ */}
+        <div className="flex items-center gap-4">
+          <label className="w-32 font-semibold whitespace-nowrap">EVENT TYPE</label>
+          <div className="w-full">
+            <Select value={requestTypeVal} onValueChange={setRequestTypeVal}>
+              <SelectTrigger>
+                <SelectValue placeholder="ทั้งหมด" />
+              </SelectTrigger>
+              <SelectContent>
+                {status.map(opt => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
-        <>
-          <InputGroup merged>
-            <InputGroupText>{/* <Icon icon="heroicons:magnifying-glass" /> */}</InputGroupText>
-            <Input
-              type="text"
-              placeholder="Search.."
-              value={search}
-              onChange={search => {
-                setSearch(search.target.value);
-              }}
-            />
-          </InputGroup>
-        </>
-        <div className="space-x-4">
-          <Button
-            variant="outline"
-            className="w-32"
-            onClick={() => {
-              fetchData();
-            }}
-          >
-            <Icon icon="mingcute:search-line" width="24" height="24" />
-            Search
-          </Button>{" "}
-          {/* 128px */}
-          <Button
-            variant="outline"
-            className="w-32"
-            onClick={() => {
-              handleClear();
-            }}
-          >
-            <Icon icon="solar:refresh-line-duotone" width="24" height="24" />
-            Clear
-          </Button>{" "}
+
+        {/* สถานะคำขอ */}
+        <div className="flex items-center gap-4">
+          <label className="w-20 font-semibold whitespace-nowrap text-right">STATUS</label>
+          <div className="w-full">
+            <Select value={statusVal} onValueChange={setStatusVal}>
+              <SelectTrigger>
+                <SelectValue placeholder="ทั้งหมด" />
+              </SelectTrigger>
+              <SelectContent>
+                {status.map(opt => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        {/* วันที่ยื่นคำขอ */}
+        <div className="flex items-center gap-4">
+          <label className="w-32 font-semibold whitespace-nowrap">DATE</label>
+          <div className="flex gap-2 w-full">
+            <Input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="w-full" />
+            <span className="text-sm flex items-center justify-center font-semibold">ถึง</span>
+            <Input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="w-full" />
+          </div>
+        </div>
+
+        {/* คำค้น */}
+        <div className="flex items-center gap-4">
+          <label className="w-20 font-semibold whitespace-nowrap text-right">KEYWORD</label>
+          <div className="w-full">
+            <Input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="เลขที่คำขอ/เลขทะเบียนนิติบุคคล/ชื่อนิติบุคคล" className="w-full" />
+          </div>
         </div>
       </div>
-      <div className="p-1 md:p-5">
+
+      <div className="flex items-center justify-end gap-4 pr-5 pt-1 text-default-900">
+        <Button variant="outline" className="w-28" onClick={fetchData}>
+          <Icon icon="mingcute:search-line" width="24" height="24" />
+          ค้นหา
+        </Button>
+        <Button variant="outline" className="w-28" onClick={handleClear}>
+          <Icon icon="solar:refresh-line-duotone" width="24" height="24" />
+          ล้างค่า
+        </Button>
+      </div>
+      {/* ── Chart Report -------------------------------------------------- */}
+      <div className="mx-32 my-10">
+        <div className="border-none pb-0">
+          <div className="flex items-center gap-2 flex-wrap ">
+            <div className="flex-1">
+              {/* <div className="text-xl font-semibold text-default-900 whitespace-nowrap">Reports Snapshot</div>
+              <span className="text-xs text-default-600">Demographic properties of your customer</span> */}
+            </div>
+          </div>
+        </div>
+        <div className="p-1 md:p-5">
+          <Tabs defaultValue="all">
+            <TabsList className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-6 justify-start w-full bg-transparent h-full">
+              {tabsTrigger.map((item, index) => (
+                <TabsTrigger
+                  key={`report-trigger-${index}`}
+                  value={item.value}
+                  className={cn("flex flex-col gap-1.5 p-4 overflow-hidden   items-start  relative before:absolute before:left-1/2 before:-translate-x-1/2 before:bottom-1 before:h-[2px] before:w-9 before:bg-primary/50 dark:before:bg-primary-foreground before:hidden data-[state=active]:shadow-none data-[state=active]:before:block", {
+                    "bg-primary/30 data-[state=active]:bg-primary/30 dark:bg-primary/70": item.color === "primary",
+                    "bg-orange-50 data-[state=active]:bg-orange-50 dark:bg-orange-500": item.color === "warning",
+                    "bg-green-50 data-[state=active]:bg-green-50 dark:bg-green-500": item.color === "success",
+                    "bg-cyan-50 data-[state=active]:bg-cyan-50 dark:bg-cyan-500 ": item.color === "info",
+                  })}
+                >
+                  <span
+                    className={cn("h-10 w-10 rounded-full bg-primary/40 absolute -top-3 -right-3 ring-8 ring-primary/30", {
+                      "bg-primary/50  ring-primary/20 dark:bg-primary dark:ring-primary/40": item.color === "primary",
+                      "bg-orange-200 ring-orange-100 dark:bg-orange-300 dark:ring-orange-400": item.color === "warning",
+                      "bg-green-200 ring-green-100 dark:bg-green-300 dark:ring-green-400": item.color === "success",
+                      "bg-cyan-200 ring-cyan-100 dark:bg-cyan-300 dark:ring-cyan-400": item.color === "info",
+                    })}
+                  ></span>
+                  <span className="text-sm text-default-800 dark:text-primary-foreground font-semibold capitalize relative z-10"> {item.text}</span>
+                  <span className={`text-lg font-semibold text-${item.color}/80 dark:text-primary-foreground`}>{item.total}</span>
+                </TabsTrigger>
+              ))}
+            </TabsList>
+            {/* charts data */}
+            {tabsContentData.map((item, index) => (
+              <TabsContent key={`report-tab-${index}`} value={item.value}>
+                <ReportsChart series={item.series} chartColor={item.color} />
+              </TabsContent>
+            ))}
+          </Tabs>
+        </div>
+      </div>
+      {/* ── Data table -------------------------------------------------- */}
+      <div className="p-4">
         <Table>
           <TableHeader>
-            {table.getHeaderGroups().map(headerGroup => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map(header => {
-                  return <TableHead key={header.id}>{header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}</TableHead>;
-                })}
+            {table.getHeaderGroups().map(hg => (
+              <TableRow key={hg.id}>
+                {hg.headers.map(h => (
+                  <TableHead key={h.id}>{h.isPlaceholder ? null : flexRender(h.column.columnDef.header, h.getContext())}</TableHead>
+                ))}
               </TableRow>
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length ? (
+            {table.getRowModel().rows.length ? (
               table.getRowModel().rows.map(row => (
-                <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+                <TableRow key={row.id}>
                   {row.getVisibleCells().map(cell => (
                     <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
                   ))}
@@ -613,16 +400,13 @@ export function MemberEventDataTable() {
             ) : (
               <TableRow>
                 <TableCell colSpan={columns.length} className="h-24 text-center">
-                  --NO DATA--
+                  -- NO DATA --
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
       </div>
-      <PaginationComponent />
     </>
   );
 }
-
-export default MemberEventDataTable;

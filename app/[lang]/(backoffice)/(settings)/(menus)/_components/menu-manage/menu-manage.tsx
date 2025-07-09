@@ -1,9 +1,10 @@
 "use client";
-import React, { useState, DragEvent, useEffect } from "react";
+import React, { useState, DragEvent, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "@iconify/react";
 import { useMenuStore } from "@/store/menu/useMenuStore";
 import { mapMenuHierarchy } from "@/utils/Constant";
+import isEqual from "lodash.isequal";
 import { Toggle } from "@/components/ui/toggle";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipArrow, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -32,57 +33,76 @@ const MenuManagement: React.FC = () => {
   const [fetchClear, setFetchClear] = useState(false);
   const [loading, setLoading] = useState(false);
   const [deletedItems, setDeletedItems] = useState<Set<number>>(new Set());
-  let confirmDialogConfig = {};
-  let successDialogConfig = {};
-  let resetDialogConfig = {};
-  let successResetDialogConfig = {};
-  let saveDialogConfig = {};
-  let successSaveDialogConfig = {};
-  confirmDialogConfig = {
-    title: "Confirm Delete Service?",
-    icon: "stash:question",
-    class: "destructive",
-    color: "#EF4444",
-    body: "Do you want to delete this service?",
-    sub: "Deleting this item is irreversible. Are you sure you want to continue?",
-    confirmButton: "Yes, Delete",
-    cancelButton: "Cancel",
-  };
-  resetDialogConfig = {
-    title: "Reset Menu Changes?",
-    icon: "stash:question",
-    class: "destructive",
-    color: "#EF4444",
-    body: "This will restore the original menu structure.",
-    sub: "All unsaved changes will be lost. Continue?",
-    confirmButton: "Yes, Reset",
-    cancelButton: "Cancel",
-  };
-  successResetDialogConfig = {
-    icon: "solar:verified-check-outline",
-    body: "Reset reordering successfully.",
-    color: "#22C55E",
-  };
-  successDialogConfig = {
-    icon: "solar:verified-check-outline",
-    body: "Delete service successfully.",
-    color: "#22C55E",
-  };
-  saveDialogConfig = {
-    title: "Save Menu Changes?",
-    icon: "stash:question",
-    class: "primary",
-    color: "#2563EB",
-    body: "Do you want to save the changes made to the menu?",
-    sub: "You can edit or delete this menu later.",
-    confirmButton: "Yes, Save",
-    cancelButton: "Cancel",
-  };
-  successSaveDialogConfig = {
-    icon: "solar:verified-check-outline",
-    body: "Save menu successfully.",
-    color: "#22C55E",
-  };
+
+  const confirmDialogConfig = useMemo(
+    () => ({
+      title: "Confirm Delete Service?",
+      icon: "stash:question",
+      class: "destructive",
+      color: "#EF4444",
+      body: "Do you want to delete this service?",
+      sub: "Deleting this item is irreversible. Are you sure you want to continue?",
+      confirmButton: "Yes, Delete",
+      cancelButton: "Cancel",
+    }),
+    []
+  );
+
+  const resetDialogConfig = useMemo(
+    () => ({
+      title: "Reset Menu Changes?",
+      icon: "stash:question",
+      class: "destructive",
+      color: "#EF4444",
+      body: "This will restore the original menu structure.",
+      sub: "All unsaved changes will be lost. Continue?",
+      confirmButton: "Yes, Reset",
+      cancelButton: "Cancel",
+    }),
+    []
+  );
+
+  const successResetDialogConfig = useMemo(
+    () => ({
+      icon: "solar:verified-check-outline",
+      body: "Reset reordering successfully.",
+      color: "#22C55E",
+    }),
+    []
+  );
+
+  const successDialogConfig = useMemo(
+    () => ({
+      icon: "solar:verified-check-outline",
+      body: "Delete service successfully.",
+      color: "#22C55E",
+    }),
+    []
+  );
+
+  const saveDialogConfig = useMemo(
+    () => ({
+      title: "Save Menu Changes?",
+      icon: "stash:question",
+      class: "primary",
+      color: "#2563EB",
+      body: "Do you want to save the changes made to the menu?",
+      sub: "You can edit or delete this menu later.",
+      confirmButton: "Yes, Save",
+      cancelButton: "Cancel",
+    }),
+    []
+  );
+
+  const successSaveDialogConfig = useMemo(
+    () => ({
+      icon: "solar:verified-check-outline",
+      body: "Save menu successfully.",
+      color: "#22C55E",
+    }),
+    []
+  );
+
   const router = useRouter();
 
   useEffect(() => {
@@ -93,7 +113,7 @@ const MenuManagement: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (menus.length > 0) {
+    if (menus.length > 0 && !isEqual(menus, originalMenus)) {
       const hierarchicalMenus = mapMenuHierarchy(menus);
       const menusWithSequence = addSequenceNumbers(hierarchicalMenus);
       setMenusList(menusWithSequence);
@@ -180,18 +200,14 @@ const MenuManagement: React.FC = () => {
 
   const handleConfirm = (): void => {
     if (!selectedItem) return;
-    console.log("selectedItem", selectedItem);
     setOpenSuccessModal(true);
     setOpenModal(false);
     if (selectedItem.id !== undefined) {
-      // setDeletedItems(prev => new Set([...prev, selectedItem.id]));
       deleteMenu(selectedItem.id, {
         search: "",
         status: "",
-        page: 1,
-        limit: 10,
-        sort: "created_at",
-        order: "DESC",
+        sort: "",
+        order: "",
       });
     }
     setSelectedItem(null);
@@ -828,6 +844,9 @@ const MenuManagement: React.FC = () => {
     setFetchClear(true);
   };
 
+  const menuChanges = compareMenus(originalMenus, menusList);
+  const totalChanges = menuChanges.length + deletedItems.size;
+
   return (
     <div className="">
       {openModal && <ConfirmDialog open={openModal} onOpenChange={setOpenModal} onConfirm={handleConfirm} dialogConfig={confirmDialogConfig} />}
@@ -901,7 +920,7 @@ const MenuManagement: React.FC = () => {
         )}
         {isReorderMode && (
           <>
-            {compareMenus(originalMenus, menusList).length + deletedItems.size > 0 && <div className="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-sm font-medium">{compareMenus(originalMenus, menusList).length + deletedItems.size} changes</div>}
+            {totalChanges > 0 && <div className="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-sm font-medium">{totalChanges} changes</div>}
             <Button onClick={resetMenu} variant="soft" color="destructive">
               Reset Changes
             </Button>
@@ -949,12 +968,12 @@ const MenuManagement: React.FC = () => {
               }
             }}
           >
-            Back
+            Cancel
           </Button>
         )}
         {isReorderMode && (
-          <Button onClick={saveChanges} disabled={compareMenus(originalMenus, menusList).length === 0}>
-            Save Changes ({compareMenus(originalMenus, menusList).length + deletedItems.size})
+          <Button onClick={saveChanges} disabled={menuChanges.length === 0}>
+            Save Changes ({totalChanges})
           </Button>
         )}
       </div>

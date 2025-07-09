@@ -38,11 +38,11 @@ const NestedSubMenu = ({
             <li
               className={cn(
                 "block pl-9   first:pt-4 last:pb-4  relative before:absolute first:before:top-4 before:top-0 before:left-4  before:w-[3px]",
-                // {
-                //   "before:bg-primary first:before:h-[calc(100%-16px)]  before:h-full":
-                //     isLocationMatch(subItem.href, locationName),
-                //   " ": activeSubmenu === index,
-                // }
+                {
+                  "before:bg-primary first:before:h-[calc(100%-16px)]  before:h-full":
+                    isLocationMatch(subItem.href, locationName),
+                  " ": activeSubmenu === index,
+                }
               )}
               key={`sub_menu_${j}`}
             >

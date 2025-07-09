@@ -1,62 +1,135 @@
+// components/sidebar/SubMenuHandler.tsx
 "use client";
+
+import React, { useCallback } from "react";
 import { Icon } from "@iconify/react";
-import { cn, translate } from "@/lib/utils";
 import * as HoverCard from "@radix-ui/react-hover-card";
+
+import { cn, translate } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
-
 import CollapsedHoverMenu from "./collapsed-hover-menu";
-import { useEffect } from "react";
 
-const SubMenuHandler = ({ item, toggleSubmenu, index, activeSubmenu, collapsed, menuTitle, trans }: { item: any; toggleSubmenu: any; index: number; activeSubmenu: number | null; collapsed: boolean; menuTitle?: string; trans: any }) => {
-  const { title } = item;
-  useEffect(() => {
-    console.log("index", index);
-    console.log("activeSubmenu", activeSubmenu);
-  }, [index, activeSubmenu]);
+/* ── Types ──────────────────────────────────────────────── */
+export interface MenuItem {
+  title: string;
+  icon?: string | null;
+  child?: MenuItem[];
+  multi_menu?: MenuItem[];
+}
 
-  return (
-    <>
-      {collapsed ? (
-        <HoverCard.Root>
-          <HoverCard.Trigger asChild>
-            <div className="inline-flex cursor-pointer items-center justify-center data-[state=open]:bg-primary-100 data-[state=open]:text-primary  w-12 h-12  rounded-md">{item.icon && <Icon icon={item.icon} className="w-6 h-6" />}</div>
-          </HoverCard.Trigger>
-          <HoverCard.Portal>
-            <HoverCard.Content collisionPadding={70} sideOffset={5} side="right" className="  z-50  data-[side=bottom]:animate-slideUpAndFade data-[side=right]:animate-slideLeftAndFade data-[side=left]:animate-slideRightAndFade data-[side=top]:animate-slideDownAndFade w-[300px] rounded-md  bg-popover  shadow-sm data-[state=open]:transition-all">
-              <ScrollArea
-                className={cn("p-5", {
-                  "h-[250px]": item.child.length > 5 || item.child.some((childItem: any) => childItem.multi_menu && childItem.multi_menu.length > 5),
-                })}
-              >
-                <CollapsedHoverMenu item={item} menuTitle={menuTitle} trans={trans} />
-              </ScrollArea>
-            </HoverCard.Content>
-          </HoverCard.Portal>
-        </HoverCard.Root>
-      ) : (
-        <div
-          onClick={() => toggleSubmenu(index)}
-          className={cn("flex  text-default-700 font-medium text-sm capitalize px-[10px] py-3 rounded cursor-pointer transition-all duration-100 hover:bg-primary hover:text-primary-foreground group", {
-            "bg-primary  text-primary-foreground": activeSubmenu === index,
-          })}
-        >
-          <div className="flex-1  gap-3 flex items-start">
-            <span className="inline-flex items-center  text-lg ">{item.icon && <Icon icon={item.icon} className="w-5 h-5" />}</span>
-            <div className=" ">{translate(title, trans)}</div>
+interface Props {
+  item: MenuItem;
+  index: number;
+  activeSubmenu: number | null;
+  collapsed: boolean;
+  menuTitle?: string;
+  trans: Record<string, string>;
+  toggleSubmenu: (i: number) => void;
+}
+
+/* ── Component ──────────────────────────────────────────── */
+const SubMenuHandler: React.FC<Props> = ({
+  item,
+  index,
+  activeSubmenu,
+  collapsed,
+  menuTitle,
+  trans,
+  toggleSubmenu,
+}) => {
+  const { title, icon, child = [] } = item;
+  const isActive = activeSubmenu === index;
+
+  /* click handler (expanded sidebar) */
+  const handleClick = useCallback(() => {
+    toggleSubmenu(index);
+  }, [toggleSubmenu, index]);
+
+  /* =======================================================
+     COLLAPSED — HoverCard with icon only
+  ======================================================= */
+  if (collapsed) {
+    const hasLongList =
+      child.length > 5 ||
+      child.some((c) => c.multi_menu && c.multi_menu.length > 5);
+
+    return (
+      <HoverCard.Root>
+        <HoverCard.Trigger asChild>
+          <div
+            className={cn(
+              "inline-flex h-12 w-12 cursor-pointer items-center justify-center rounded-md transition-colors",
+              "data-[state=open]:bg-primary-100 data-[state=open]:text-primary",
+              {
+                /* highlight menu that matches current route */
+                "bg-primary text-primary-foreground": isActive,
+                "text-default-600 hover:bg-primary-100 hover:text-primary":
+                  !isActive,
+              }
+            )}
+          >
+            {icon && <Icon icon={icon} className="h-6 w-6" />}
           </div>
-          <div className="flex-0">
-            <div
-              className={cn(" text-base rounded-full flex justify-center items-center transition-all duration-300 group-hover:text-primary-foreground", {
-                "rotate-90  ": activeSubmenu === index,
-                " text-default-500  ": activeSubmenu !== index,
-              })}
+        </HoverCard.Trigger>
+
+        <HoverCard.Portal>
+          <HoverCard.Content
+            side="right"
+            sideOffset={5}
+            collisionPadding={70}
+            className="z-50 w-[300px] rounded-md bg-popover shadow-sm
+                       data-[side=right]:animate-slideLeftAndFade
+                       data-[state=open]:transition-all"
+          >
+            <ScrollArea
+              className={cn("p-5", { "h-[250px]": hasLongList })}
             >
-              <Icon icon="heroicons:chevron-right-20-solid" className="h-5 w-5" />
-            </div>
-          </div>
-        </div>
+              <CollapsedHoverMenu
+                item={item}
+                menuTitle={menuTitle}
+                trans={trans}
+              />
+            </ScrollArea>
+          </HoverCard.Content>
+        </HoverCard.Portal>
+      </HoverCard.Root>
+    );
+  }
+
+  /* =======================================================
+     EXPANDED — full row with caret
+  ======================================================= */
+  return (
+    <div
+      onClick={handleClick}
+      className={cn(
+        "group flex cursor-pointer items-start gap-3 rounded px-[10px] py-3 text-sm font-medium capitalize transition-all duration-100",
+        {
+          "bg-primary text-primary-foreground": isActive,
+          "text-default-700 hover:bg-primary hover:text-primary-foreground":
+            !isActive,
+        }
       )}
-    </>
+    >
+      {/* icon + title */}
+      <span className="text-lg">
+        {icon && <Icon icon={icon} className="h-5 w-5" />}
+      </span>
+      <span className="flex-1">{translate(title, trans)}</span>
+
+      {/* caret */}
+      <span
+        className={cn(
+          "flex items-center justify-center text-base transition-transform duration-300 group-hover:text-primary-foreground",
+          {
+            "rotate-90": isActive,
+            "text-default-500": !isActive,
+          }
+        )}
+      >
+        <Icon icon="heroicons:chevron-right-20-solid" className="h-5 w-5" />
+      </span>
+    </div>
   );
 };
 

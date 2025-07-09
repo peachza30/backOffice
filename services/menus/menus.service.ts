@@ -8,7 +8,7 @@ export const findAll = async (params: FetchParams) => {
     sort: params.sort ?? 'sequence',
     order: params.order ?? 'ASC',
   }).toString();
-
+  
   const response = await httpClient.get(`/menus?${query}`);
   return response.data;
 };

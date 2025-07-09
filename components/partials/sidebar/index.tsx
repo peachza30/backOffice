@@ -51,7 +51,7 @@ const Sidebar = ({ trans }: { trans: string }) => {
     if (profile && menus && !loading) {
       try {
         const newMenusConfig = getMenu(profile);
-        console.log("newMenusConfig", newMenusConfig);
+        // console.log("newMenusConfig", newMenusConfig);
         setMenusConfig(newMenusConfig);
       } catch (error) {
         console.error("Failed to generate menu config:", error);
@@ -63,7 +63,7 @@ const Sidebar = ({ trans }: { trans: string }) => {
 
   if (!isDesktop && (sidebarType === "popover" || sidebarType === "classic")) {
     selectedSidebar = <MobileSidebar trans={trans} menusConfig={menusConfig} />;
-  console.log("menusConfig", menusConfig);
+  // console.log("menusConfig", menusConfig);
 
   } else {
     const sidebarComponents: { [key: string]: JSX.Element } = {

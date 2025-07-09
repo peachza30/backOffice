@@ -1,77 +1,101 @@
+// components/sidebar/SingleMenuItem.tsx
+"use client";
+import React, { useCallback, useTransition } from "react";
+import { useRouter, usePathname } from "next/navigation";
+import Link from "next/link";
 import { Icon } from "@iconify/react";
-
-import React from "react";
+import { Loader2 } from "lucide-react";
+import * as Tooltip from "@radix-ui/react-tooltip";
 
 import { Badge } from "@/components/ui/badge";
 import { cn, isLocationMatch, translate, getDynamicPath } from "@/lib/utils";
 
-import * as Tooltip from "@radix-ui/react-tooltip";
-import { usePathname } from "next/navigation";
-import Link from "next/link";
-const SingleMenuItem = ({ item, collapsed, trans }: {
-  item: any;
-  collapsed: boolean;
-  trans: any
-}) => {
-  const { badge, href, title } = item;
+/* ------------------------------------------------------------------ */
+type MenuItem = {
+  title: string;
+  href: string;
+  icon?: string | null;
+  badge?: string | number;
+};
 
+interface Props {
+  item: MenuItem;
+  collapsed: boolean;
+  trans: Record<string, string>;
+}
+
+/* ------------------------------------------------------------------ */
+const SingleMenuItem: React.FC<Props> = ({ item, collapsed, trans }) => {
+  const { badge, href, title, icon } = item;
+
+  /* —— route helpers ——————————————————————————————— */
   const pathname = usePathname();
   const locationName = getDynamicPath(pathname);
+  const isActive = isLocationMatch(href, locationName);
+
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+
+  const handleClick = useCallback(
+    (e: React.MouseEvent<HTMLAnchorElement>) => {
+      // ปิดการทำงาน native ของ <a> เพื่อใช้ startTransition
+      e.preventDefault();
+      if (isPending || !href) return;
+      startTransition(() => router.push(href));
+    },
+    [href, router, isPending]
+  );
+
+  /* —— style preset ——————————————————————————————— */
+  const activeCls = "bg-primary text-primary-foreground";
+  const idleCls = "text-default-600 hover:bg-primary-100 hover:text-primary";
+
+  /* ==================================================================
+     COLLAPSED  (แสดงแค่ไอคอน + Tooltip)
+  ===================================================================*/
+  if (collapsed) {
+    return (
+      <Tooltip.Provider>
+        <Tooltip.Root>
+          <Tooltip.Trigger asChild>
+            <Link href={href} legacyBehavior passHref>
+              <a onClick={handleClick} className={cn("relative inline-flex h-12 w-12 items-center justify-center rounded-md transition-colors", isActive ? activeCls : idleCls, { "cursor-wait": isPending })}>
+                {/* {icon && <Icon icon={icon} className="h-6 w-6" />} */}
+                {/* {isPending && (
+                  <Loader2 className="absolute inset-0 m-auto h-4 w-4 animate-spin" />
+                )} */}
+              </a>
+            </Link>
+          </Tooltip.Trigger>
+
+          <Tooltip.Portal>
+            <Tooltip.Content
+              side="right"
+              sideOffset={5}
+              collisionPadding={10}
+              className="z-50 rounded-md bg-primary px-[15px] py-[10px] text-[15px] text-primary-foreground shadow-sm
+                         data-[side=right]:animate-slideLeftAndFade"
+            >
+              {translate(title, trans)}
+              <Tooltip.Arrow className="fill-primary" />
+            </Tooltip.Content>
+          </Tooltip.Portal>
+        </Tooltip.Root>
+      </Tooltip.Provider>
+    );
+  }
+
+  /* ==================================================================
+     EXPANDED  (แสดงไอคอน + ชื่อเมนู)
+  ===================================================================*/
   return (
-    <Link href={href}>
-      <>
-        {collapsed ? (
-          <div>
-            <Tooltip.Provider>
-              <Tooltip.Root>
-                <Tooltip.Trigger asChild>
-                  <span
-                    className={cn(
-                      "h-12 w-12 mx-auto rounded-md  transition-all duration-300 inline-flex flex-col items-center justify-center  relative  ",
-                      {
-                        "bg-primary text-primary-foreground data-[state=delayed-open]:bg-primary":
-                          isLocationMatch(href, locationName),
-                        " text-default-600 data-[state=delayed-open]:bg-primary-100 data-[state=delayed-open]:text-primary ":
-                          !isLocationMatch(href, locationName),
-                      }
-                    )}
-                  >
-                    {item.icon && <Icon icon={item.icon} className="w-6 h-6" />}
-                  </span>
-                </Tooltip.Trigger>
-                <Tooltip.Portal>
-                  <Tooltip.Content
-                    side="right"
-                    className="bg-primary  text-primary-foreground data-[state=delayed-open]:data-[side=top]:animate-slideDownAndFade data-[state=delayed-open]:data-[side=right]:animate-slideLeftAndFade data-[state=delayed-open]:data-[side=left]:animate-slideRightAndFade data-[state=delayed-open]:data-[side=bottom]:animate-slideUpAndFade text-violet11 select-none rounded-[4px]  px-[15px] py-[10px] text-[15px] leading-none  shadow-sm will-change-[transform,opacity]"
-                    sideOffset={5}
-                  >
-                    {translate(title, trans)}
-                    <Tooltip.Arrow className="fill-primary" />
-                  </Tooltip.Content>
-                </Tooltip.Portal>
-              </Tooltip.Root>
-            </Tooltip.Provider>
-          </div>
-        ) : (
-          <div
-            className={cn(
-              "flex gap-3  text-default-700 text-sm capitalize px-[10px] font-medium py-3 rounded cursor-pointer hover:bg-primary hover:text-primary-foreground",
-              {
-                "bg-primary text-primary-foreground": isLocationMatch(
-                  href,
-                  locationName
-                ),
-              }
-            )}
-          >
-            <span className="flex-grow-0">
-              {item.icon && <Icon icon={item.icon} className="w-5 h-5" />}
-            </span>
-            <div className="text-box flex-grow ">{translate(title, trans)}</div>
-            {badge && <Badge className=" rounded">{item.badge}</Badge>}
-          </div>
-        )}
-      </>
+    <Link href={href} legacyBehavior passHref>
+      <a onClick={handleClick} className={cn("flex items-center gap-3 rounded px-[10px] py-3 text-sm font-medium capitalize transition-colors", isActive ? activeCls : idleCls, { "cursor-wait": isPending })}>
+        {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : icon && <Icon icon={icon} className="h-5 w-5" />}
+
+        <span className="flex-1 truncate capitalize">{translate(title, trans)}</span>
+        {badge && <Badge>{badge}</Badge>}
+      </a>
     </Link>
   );
 };
