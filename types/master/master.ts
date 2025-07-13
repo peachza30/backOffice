@@ -60,6 +60,7 @@ interface ValidationErrors {
   partnerPassword?: string;
   role?: string;
 }
+
 // type MenuPermissions = {
 //   canRead: boolean;
 //   canCreate: boolean;

@@ -9,8 +9,10 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import CorporateListDataTable from "../_components/data-table/corporate-list-table";
 import SizeButton from "../_components/button/size-button";
 import { useCorporateStore } from "@/store/corporate/useCorporateStore";
+
 const CorporateList = () => {
   const { metadata, fetchCorporates, loading, error, total } = useCorporateStore();
+  
   return (
     <>
       <Card title="Corporate List">

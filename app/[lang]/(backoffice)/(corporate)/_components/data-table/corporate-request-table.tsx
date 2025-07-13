@@ -318,6 +318,7 @@ export function CorporateRequestDataTable() {
       order: "ASC",
     });
   }, []);
+  
   useEffect(() => {
     // const userIds = Array.from(new Set(corporates.flatMap(row => [row.updated_by, row.created_by]).filter(Boolean)));
     // userIds.forEach(id => fetchUser(id as number));

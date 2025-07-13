@@ -30,6 +30,7 @@ import ConfirmDialog from "../dialog/confirm-dialog";
 import SuccessDialog from "../dialog/success-dialog";
 import { bo } from "@fullcalendar/core/internal-common";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import getPageItems from "@/lib/getPageItems";
 
 const responsiveStyles = {
   container: provided => ({
@@ -267,6 +268,7 @@ export function CorporateListDataTable() {
     { value: "A", label: "Active" },
     { value: "I", label: "Inactive" },
   ];
+
   const currentStatusValue = status.find(opt => opt.value === statusVal)?.value || "";
 
   useEffect(() => {
@@ -286,10 +288,11 @@ export function CorporateListDataTable() {
       order: "ASC",
     });
   }, []);
-  useEffect(() => {
-    // const userIds = Array.from(new Set(corporates.flatMap(row => [row.updated_by, row.created_by]).filter(Boolean)));
-    // userIds.forEach(id => fetchUser(id as number));
-  }, [corporates]);
+
+  // useEffect(() => {
+  // const userIds = Array.from(new Set(corporates.flatMap(row => [row.updated_by, row.created_by]).filter(Boolean)));
+  // userIds.forEach(id => fetchUser(id as number));
+  // }, [corporates]);
 
   const table = useReactTable({
     data: corporates || [],
@@ -372,18 +375,25 @@ export function CorporateListDataTable() {
         <div className="flex items-center gap-2">
           <p className="text-sm font-medium text-muted-foreground whitespace-nowrap">Rows per page</p>
           <Select
-            value={`${table.getState().pagination.pageSize}`}
-            onValueChange={value => {
-              table.setPageSize(Number(value));
+            value={currentPageSizeValue}
+            onValueChange={(newValue: any) => {
+              fetchCorporates({
+                search: search || "",
+                status: statusVal || "",
+                page: 1,
+                limit: newValue,
+                sort: "created_at",
+                order: "ASC",
+              });
             }}
           >
-            <SelectTrigger className="h-8 w-[70px]">
-              <SelectValue placeholder={table.getState().pagination.pageSize} />
+            <SelectTrigger>
+              <SelectValue placeholder="Select page size" />
             </SelectTrigger>
-            <SelectContent side="top">
-              {[10, 20, 30, 40, 50].map(pageSize => (
-                <SelectItem key={pageSize} value={`${pageSize}`}>
-                  {pageSize}
+            <SelectContent>
+              {pageSizeOptions.map(opt => (
+                <SelectItem key={opt.value} value={opt.value}>
+                  {opt.label}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -414,20 +424,26 @@ export function CorporateListDataTable() {
               </PaginationItem>
 
               {/* Page Numbers */}
-              {Array.from({ length: totalPages }, (_, i) => (
-                <PaginationItem key={`page-${i}`}>
-                  <PaginationLink
-                    href="#"
-                    isActive={currentPage === i}
-                    onClick={e => {
-                      e.preventDefault();
-                      handlePageChange(i);
-                    }}
-                  >
-                    {i + 1}
-                  </PaginationLink>
-                </PaginationItem>
-              ))}
+              {getPageItems(currentPage, totalPages).map(item =>
+                item === "ellipsis" ? (
+                  <PaginationItem key={`ellipsis-${Math.random()}`}>
+                    <PaginationEllipsis />
+                  </PaginationItem>
+                ) : (
+                  <PaginationItem key={`page-${item}`}>
+                    <PaginationLink
+                      href="#"
+                      isActive={currentPage === item}
+                      onClick={e => {
+                        e.preventDefault();
+                        handlePageChange(item);
+                      }}
+                    >
+                      {item + 1}
+                    </PaginationLink>
+                  </PaginationItem>
+                )
+              )}
 
               {/* Next Button */}
               <PaginationItem>

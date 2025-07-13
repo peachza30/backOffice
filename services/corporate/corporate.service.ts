@@ -10,13 +10,14 @@ export const findAll = async (params: FetchParams) => {
     status: params.status ?? '',
   }).toString();
 
-  const response = await nextApi.get(`/api/corporate`);
-  // const response = await httpClient.get(`/corporate?${query}`);
+  // const response = await nextApi.get(`/api/corporate`);
+  const response = await httpClient.get(`/corporate?${query}`);
+  console.log("response", response);
   return response.data;
 };
 export const findOne = async (id: number) => {
-  // const response = await httpClient.get('/corporate/' + id);
-  const response = await nextApi.get('/api/corporate/' + id);
+  const response = await httpClient.get('/corporate/corporate-id/' + id);
+  // const response = await nextApi.get('/api/corporate/' + id);
   return response.data;
 };
 export const create = async (data: any) => {

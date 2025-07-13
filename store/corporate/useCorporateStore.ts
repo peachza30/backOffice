@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware';
 import { subscribeWithSelector } from "zustand/middleware";
 import * as corporate from "@/services/corporate/corporate.service";
 import * as request from "@/services/corporate/request.service";
+import * as businessType from "@/services/master/corporate-business-type.service";
 
 export const useCorporateStore = create<CorporateStore>()(
   persist(
@@ -161,8 +162,6 @@ export const useCorporateStore = create<CorporateStore>()(
         set({ loading: true, error: null });
         try {
           const res = await corporate.findAll(params);
-
-          console.log("res", res);
           set({ corporates: res.data, metadata: res.metadata, loading: false });
         } catch (err) {
           if (err instanceof Error) {
@@ -176,8 +175,12 @@ export const useCorporateStore = create<CorporateStore>()(
         set({ loading: true, error: null });
         try {
           const res = await corporate.findOne(id);
+          // const bId = res.data.businessTypeId;
+          // const type = await businessType.findOne(bId);
+          // console.log("type", type);
+
           console.log("res", res);
-          set({ corporate: res, loading: false });
+          set({ corporate: res.data, loading: false });
         } catch (err) {
           if (err instanceof Error) {
             set({ error: err.message, loading: false });
