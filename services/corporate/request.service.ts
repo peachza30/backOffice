@@ -10,15 +10,16 @@ export const findAll = async (params: FetchParams) => {
     status: params.status ?? '',
   }).toString();
 
-  const response = await nextApi.get(`/api/request`);
-  // const response = await httpClient.get(`/corporate?${query}`);
+  // const response = await nextApi.get(`/api/request`);
+  const response = await httpClient.get(`/corporate/corporate-request?${query}`);
   return response.data;
 };
 export const findOne = async (id: number) => {
   // const response = await httpClient.get('/corporate/' + id);
-  const response = await nextApi.get('/api/request/' + id);
+  const response = await httpClient.get('/corporate/corporate-request/' + id);
   return response.data;
 };
+
 export const create = async (data: any) => {
   const response = await httpClient.post('/corporate', data);
   return response.data;
@@ -32,3 +33,4 @@ export const remove = async (id: number) => {
   const response = await httpClient.delete(`/corporate/${id}`);
   return response.data;
 };
+

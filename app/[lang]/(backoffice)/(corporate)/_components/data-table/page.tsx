@@ -5,7 +5,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import BasicDataTable from "./corporate-list-table";
+import BasicDataTable from "../corporate-list-table/corporate-list-table";
 import AdvancedTable from "./advanced";
 import DraggableTable from './draggable-table';
 

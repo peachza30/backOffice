@@ -19,9 +19,9 @@ type MenuItem = {
 };
 
 interface Props {
-  item: MenuItem;
+  item: any;
   collapsed: boolean;
-  trans: Record<string, string>;
+  trans: any;
 }
 
 /* ------------------------------------------------------------------ */
@@ -60,10 +60,10 @@ const SingleMenuItem: React.FC<Props> = ({ item, collapsed, trans }) => {
           <Tooltip.Trigger asChild>
             <Link href={href} legacyBehavior passHref>
               <a onClick={handleClick} className={cn("relative inline-flex h-12 w-12 items-center justify-center rounded-md transition-colors", isActive ? activeCls : idleCls, { "cursor-wait": isPending })}>
-                {/* {icon && <Icon icon={icon} className="h-6 w-6" />} */}
-                {/* {isPending && (
+                {icon && <Icon icon={icon} className="h-6 w-6" />}
+                {isPending && (
                   <Loader2 className="absolute inset-0 m-auto h-4 w-4 animate-spin" />
-                )} */}
+                )}
               </a>
             </Link>
           </Tooltip.Trigger>

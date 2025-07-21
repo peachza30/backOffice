@@ -1,18 +1,13 @@
 "use client";
-import React, { use, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { useMediaQuery } from "@/hooks/use-media-query";
-import { usePathname, useRouter } from "next/navigation";
-import LogoTfac from "@/public/images/logo/tfac.png";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
-import CorporateListDataTable from "../_components/data-table/corporate-list-table";
+import CorporateListDataTable from "../_components/corporate-list-table/corporate-list-table";
 import SizeButton from "../_components/button/size-button";
 import { useCorporateStore } from "@/store/corporate/useCorporateStore";
 
 const CorporateList = () => {
-  const { metadata, fetchCorporates, loading, error, total } = useCorporateStore();
-  
+  const { metadata } = useCorporateStore();
+
   return (
     <>
       <Card title="Corporate List">

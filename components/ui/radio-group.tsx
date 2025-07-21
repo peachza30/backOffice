@@ -21,6 +21,9 @@ const radioVariants = cva(
           "data-[state=checked]:border-destructive data-[state=checked]:text-destructive",
         secondary:
           "data-[state=checked]:border-default-300 data-[state=checked]:text-default-300",
+        default:
+          "data-[state=checked]:border-default-400 data-[state=checked]:text-default-900",
+
       },
       variant: {
         faded: "",
@@ -98,6 +101,7 @@ const RadioGroupItem = React.forwardRef<React.ElementRef<typeof RadioGroupPrimit
                 radioVariants({ color, size, radius, variant }),
                 className
               )}
+
               {...props}
             >
               <RadioGroupPrimitive.Indicator className="flex items-center justify-center">

@@ -1,26 +1,18 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { cn, isLocationMatch, getDynamicPath } from "@/lib/utils";
 import { useSidebar, useThemeStore } from "@/store";
 import SidebarLogo from "../common/logo";
 import MenuLabel from "../common/menu-label";
-import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { usePathname } from "next/navigation";
 import SingleMenuItem from "./single-menu-item";
 import SubMenuHandler from "./sub-menu-handler";
 import NestedSubMenu from "../common/nested-menus";
-// import AddBlock from "../common/add-block";
-import { useProfileStore } from "@/store/profile/useProfileStore";
-import { getMenu } from "@/config/menus";
-import { useMenuStore } from "@/store/menu/useMenuStore";
 const ClassicSidebar = ({ trans, menusConfig }: { trans: string; menusConfig: any }) => {
   const { sidebarBg } = useSidebar();
   const [activeSubmenu, setActiveSubmenu] = useState<number | null>(null);
   const [activeMultiMenu, setMultiMenu] = useState<number | null>(null);
-  // const { profile, fetchProfile } = useProfileStore();
-  // const { menus } = useMenuStore();
-  // const [menusConfig, setMenusConfig] = useState<any>(null);
   const menusList = menusConfig?.sidebarNav?.classic || [];
 
   const { collapsed, setCollapsed } = useSidebar();
@@ -80,26 +72,16 @@ const ClassicSidebar = ({ trans, menusConfig }: { trans: string; menusConfig: an
         "shadow-md": collapsed || hovered,
       })}
     >
-    {sidebarBg !== "none" && (
-      <div 
-      className=" absolute left-0 top-0   z-[-1] w-full h-full bg-cover bg-center opacity-[0.07]" 
-      style={{ backgroundImage: `url(${sidebarBg})` }}
-      ></div>
-    )}
+      {sidebarBg !== "none" && <div className=" absolute left-0 top-0   z-[-1] w-full h-full bg-cover bg-center opacity-[0.07]" style={{ backgroundImage: `url(${sidebarBg})` }}></div>}
 
       <SidebarLogo hovered={hovered} />
 
-    <ScrollArea className={cn("sidebar-menu  h-[calc(100%-80px)] ", { "px-4": !collapsed || hovered })}>
-        <ul
-          dir={isRtl ? "rtl" : "ltr"}
-        className={cn(" space-y-1", { " space-y-2 text-center": collapsed, "text-start": collapsed && hovered })}
-        >
+      <ScrollArea className={cn("sidebar-menu  h-[calc(100%-80px)] ", { "px-4": !collapsed || hovered })}>
+        <ul dir={isRtl ? "rtl" : "ltr"} className={cn(" space-y-1", { " space-y-2 text-center": collapsed, "text-start": collapsed && hovered })}>
           {menusList.map((item, i) => (
             <li key={`menu_key_${i}`}>
               {/* single menu  */}
-            {!item.child && !item.isHeader && (
-              <SingleMenuItem item={item} collapsed={collapsed} hovered={hovered} trans={trans} />
-            )}
+              {!item.child && !item.isHeader && <SingleMenuItem item={item} collapsed={collapsed} hovered={hovered} trans={trans} />}
 
               {/* menu label */}
               {item.isHeader && !item.child && (!collapsed || hovered) && <MenuLabel item={item} trans={trans} />}
@@ -107,25 +89,8 @@ const ClassicSidebar = ({ trans, menusConfig }: { trans: string; menusConfig: an
               {/* sub menu */}
               {item.child && (
                 <>
-                <SubMenuHandler
-                  item={item}
-                  toggleSubmenu={toggleSubmenu}
-                  index={i}
-                  activeSubmenu={activeSubmenu}
-                  collapsed={collapsed}
-                  hovered={hovered}
-                  trans={trans}
-                />
-                {(!collapsed || hovered) && (
-                  <NestedSubMenu
-                    toggleMultiMenu={toggleMultiMenu}
-                    activeMultiMenu={activeMultiMenu}
-                    activeSubmenu={activeSubmenu}
-                    item={item}
-                    index={i}
-                    trans={trans}
-                  />
-                )}
+                  <SubMenuHandler item={item} toggleSubmenu={toggleSubmenu} index={i} activeSubmenu={activeSubmenu} collapsed={collapsed} hovered={hovered} trans={trans} />
+                  {(!collapsed || hovered) && <NestedSubMenu toggleMultiMenu={toggleMultiMenu} activeMultiMenu={activeMultiMenu} activeSubmenu={activeSubmenu} item={item} index={i} trans={trans} />}
                 </>
               )}
             </li>

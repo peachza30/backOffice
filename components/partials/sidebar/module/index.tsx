@@ -20,9 +20,6 @@ import { getMenu } from "@/config/menus";
 import { useMenuStore } from "@/store/menu/useMenuStore";
 
 const ModuleSidebar = ({ trans, menusConfig }: { trans: any; menusConfig: any }) => {
-  // const { profile, fetchProfile } = useProfileStore();
-  // const { menus } = useMenuStore();
-  // const [menusConfig, setMenusConfig] = useState<any>(null);
   const menusList = menusConfig?.sidebarNav?.modern || [];
   const { subMenu, setSubmenu, collapsed, setCollapsed, sidebarBg } = useSidebar();
   const { isRtl } = useThemeStore();

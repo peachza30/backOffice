@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { useServiceStore } from "@/store/service/useServiceStore";
 import { Label } from "@/app/[lang]/(backoffice)/(settings)/(service)/_components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,18 @@ import { Button } from "../ui/button";
 import { useRouter } from "next/navigation";
 import ConfirmDialog from "@/app/[lang]/(backoffice)/(settings)/(service)/_components/dialog/confirm-dialog";
 import SuccessDialog from "../dialog/success-dialog";
+import { Controller, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { cn } from "@/lib/utils";
+
+const formServiceListSchema = z.object({
+  service_name: z.string().min(1, {
+    message: "Service name is required",
+  }),
+  service_description: z.string().optional(),
+  status: z.string().optional(),
+})
 
 const ServiceForm = ({ mode, serviceId }: { mode: string; serviceId?: number }) => {
   const { service, createService, updateService } = useServiceStore();
@@ -22,21 +34,50 @@ const ServiceForm = ({ mode, serviceId }: { mode: string; serviceId?: number }) 
   const [openSuccessModal, setOpenSuccessModal] = useState(false);
   const router = useRouter();
 
+  const initialValues = {
+    service_name: service?.service_name || "",
+    service_description: service?.service_description || "",
+    status: mode === "create" ? "A" : service?.status,
+  };
+
+  const {
+    control,
+    handleSubmit,
+    watch,
+    reset,
+    formState: { errors },
+  } = useForm({
+    defaultValues: initialValues,
+    resolver: zodResolver(formServiceListSchema),
+  });
+
+  const watchServiceName = watch("service_name");
+
+  useEffect(() => {
+    console.log("service Name Change");
+    
+  }, []);
+
+
+  useEffect(() => {
+    if (service) {
+      setServiceName(service.service_name);
+      setDescription(service.service_description);
+      setShow(service.status === "A");
+      setStatus(service.status);
+    }
+  }, [service,reset]);
+  
+
   useEffect(() => {
     if (mode === "create") {
       setMenuTopic("");
-      setServiceName("");
+      // setServiceName("");
       setDescription("");
       setShow(true);
       setStatus("A");
     } else {
       setMenuTopic("Edit service");
-      if (service) {
-        setServiceName(service.service_name || "");
-        setDescription(service.service_description || "");
-        setShow(service.status === "A");
-        setStatus(service.status);
-      }
     }
   }, [service, mode]); // Added mode to dependency array
 
@@ -48,16 +89,24 @@ const ServiceForm = ({ mode, serviceId }: { mode: string; serviceId?: number }) 
     }
   }, [show]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  // const handleSubmit = (e: React.FormEvent) => {
+  //   e.preventDefault();
 
-    if (!serviceName.trim()) {
-      alert("Service name is required");
-      return;
-    }
+  //   if (!serviceName.trim()) {
+  //     alert("Service name is required");
+  //     return;
+  //   }
 
-    setOpenModal(true); // Open confirmation modal
-  };
+  //   setOpenModal(true); // Open confirmation modal
+  // };
+
+  const onSubmit = async (values: any) => {
+    console.log(values);
+    setServiceName(values.service_name);
+    setDescription(values.service_description);
+    setShow(values.status === "A");
+    setOpenModal(true);
+  }
 
   const handleSuccessModalChange = (isOpen: boolean) => {
     if (!isOpen) {
@@ -73,6 +122,7 @@ const ServiceForm = ({ mode, serviceId }: { mode: string; serviceId?: number }) 
     };
 
     try {
+
       if (mode === "create") {
         await createService(serviceData, {
           search: "",
@@ -144,7 +194,7 @@ const ServiceForm = ({ mode, serviceId }: { mode: string; serviceId?: number }) 
   }
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit(onSubmit)}>
       {openModal && <ConfirmDialog open={openModal} onOpenChange={setOpenModal} onConfirm={handleConfirm} dialogConfig={dialogConfig} />}
       {openSuccessModal && <SuccessDialog open={openSuccessModal} onOpenChange={handleSuccessModalChange} dialogConfig={successDialogConfig} />}
 
@@ -155,24 +205,41 @@ const ServiceForm = ({ mode, serviceId }: { mode: string; serviceId?: number }) 
         <Label className="mb-3" htmlFor="serviceName">
           SERVICE NAME <span className="text-warning">*</span>
         </Label>
-        <Input
+        <Controller
+          name="service_name"
+          control={control}
+          render={({ field }) => 
+          <Input
+          {...field}
           type="text"
-          value={serviceName} // Changed from defaultValue to value
-          onChange={e => setServiceName(e.target.value)}
           placeholder="Please enter service name"
-          id="serviceName"
-          required
+          className={cn("", {
+                              "border-destructive focus:border-destructive":
+                                errors.service_name,
+                            })}
+          id="service_name"
         />
+      }
+        
+        />
+        <span className="text-destructive">{errors.service_name?.message}</span>
+
       </div>
       <div className="p-5 pl-20 pr-20">
         <Label className="mb-3" htmlFor="inputId">
           SERVICE DESCRIPTION
         </Label>
+        <Controller
+          name="service_description"
+          control={control}
+          render={({ field }) => 
         <Textarea
-          value={description} // Changed from defaultValue to value
-          onChange={e => setDescription(e.target.value)}
+          {...field} // Changed from defaultValue to value
           placeholder="Please enter service description"
           rows={3}
+        />
+      }
+        
         />
       </div>
       {mode === "edit" && (

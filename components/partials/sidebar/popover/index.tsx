@@ -17,12 +17,8 @@ import { cn, isLocationMatch, getDynamicPath } from "@/lib/utils";
 import { normalizeMenus, MenuItem } from "@/lib/menu-normalizer"; // 🔄  NEW
 
 /* -------------------------------------------------------------------- */
-interface Props {
-  trans: Record<string, string>;
-  menusConfig: any;
-}
 
-const PopoverSidebar: React.FC<Props> = ({ trans, menusConfig }) => {
+const PopoverSidebar = ({ trans, menusConfig }: { trans: string; menusConfig: any }) => {
   /* ── UI stores ─────────────────────────────────────────── */
   const { collapsed, sidebarBg } = useSidebar();
   const { layout, isRtl } = useThemeStore();

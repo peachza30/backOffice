@@ -3,7 +3,7 @@ import { persist } from 'zustand/middleware';
 import { subscribeWithSelector } from "zustand/middleware";
 import * as corporate from "@/services/corporate/corporate.service";
 import * as request from "@/services/corporate/request.service";
-import * as businessType from "@/services/master/corporate-business-type.service";
+import * as requestFormType from "@/services/corporate/requestForm.service";
 
 export const useCorporateStore = create<CorporateStore>()(
   persist(
@@ -12,6 +12,7 @@ export const useCorporateStore = create<CorporateStore>()(
       corporate: null,
       requests: [],
       request: null,
+      requestForm: [],
       corporateRequestById: null,
       metadata: null,
       documents: [],
@@ -26,6 +27,7 @@ export const useCorporateStore = create<CorporateStore>()(
         set({ loading: true, error: null });
         try {
           const res = await request.findAll(params);
+          console.log("res", res);
           set({ requests: res.data, metadata: res.metadata, loading: false });
         } catch (err) {
           if (err instanceof Error) {
@@ -40,6 +42,19 @@ export const useCorporateStore = create<CorporateStore>()(
         try {
           const res = await request.findOne(params);
           set({ request: res.data, metadata: res.metadata, loading: false });
+        } catch (err) {
+          if (err instanceof Error) {
+            set({ error: err.message, loading: false });
+          } else {
+            set({ error: "An unexpected error occurred", loading: false });
+          }
+        }
+      },
+      fetchCorporateRequestForm: async () => {
+        set({ loading: true, error: null });
+        try {
+          const res = await requestFormType.findAll();
+          set({ requestForm: res.data, metadata: res.metadata, loading: false });
         } catch (err) {
           if (err instanceof Error) {
             set({ error: err.message, loading: false });
@@ -110,45 +125,44 @@ export const useCorporateStore = create<CorporateStore>()(
               type: "หนังสือรับรองการจดทะเบียนนิติบุคคล ไม่เกิน 3 เดือน",
               count: 10,
               date: "2023-10-01",
-              file: "/files/TAS_21_revised_2568.pdf",
+              fileId: "6600f271d2babd2cd8a77ece",
             },
             {
               id: 2,
               type: "สำเนาบัตรประจำตัวประชาชนของกรรมการ/หุ้นส่วนผู้จัดการผู้มีอำนาจลงนาม",
               count: 5,
               date: "2023-10-02",
-              file: "/files/TFRS 18_2568.pdf",
+              fileId: "66b31f10fc70cdde2d64fc90",
             },
             {
               id: 3,
               type: "งบการเงินย้อนหลัง3ปี",
               count: 3,
               date: "2023-10-03",
-              file: "/files/TFRS 19_2568.pdf",
+              fileId: "66b31f05fc70cdde2d64fc8c",
             },
             {
               id: 4,
               type: "ข้อมูลในงบกำไรขาดทุน หรือสำเนางบการเงิน ย้อนหลัง 1 ปี กรณีเป็นนิติบุคคลที่จดทะเบียนกับสภาวิชาชีพบัญชีครั้งแรก (ถ้ามี)",
               count: 1,
               date: "2023-05-11",
-              file: "/files/TFRS_1_revised_2568.pdf",
+              fileId: "6600f271d2babd2cd8a77ece",
             },
             {
               id: 5,
               type: "สำเนาหลักประกัน",
               count: 2,
               date: "2023-05-11",
-              file: "/files/TAS_21_revised_2568.pdf",
+              fileId: "66b31f10fc70cdde2d64fc90",
             },
             {
               id: 6,
               type: "สำเนางบการเงินของปีก่อน (กรณีที่งบการเงินล่าสุดยังไม่ได้ตรวจสอบและแสดงความเห็น โดยผู้สอบบัญชี)",
               count: 1,
               date: "2023-05-11",
-              file: "/files/TFRS 18_2568.pdf",
+              fileId: "6600f1b3d2babd2cd8a77e42",
             },
           ];
-          console.log("res", data);
           set({ documents: data, loading: false });
         } catch (err) {
           if (err instanceof Error) {
@@ -158,7 +172,7 @@ export const useCorporateStore = create<CorporateStore>()(
           }
         }
       },
-      fetchCorporates: async (params) => {
+      fetchCorporatesList: async (params) => {
         set({ loading: true, error: null });
         try {
           const res = await corporate.findAll(params);
@@ -171,7 +185,7 @@ export const useCorporateStore = create<CorporateStore>()(
           }
         }
       },
-      fetchCorporateById: async (id) => {
+      fetchCorporateListById: async (id) => {
         set({ loading: true, error: null });
         try {
           const res = await corporate.findOne(id);
@@ -179,7 +193,6 @@ export const useCorporateStore = create<CorporateStore>()(
           // const type = await businessType.findOne(bId);
           // console.log("type", type);
 
-          console.log("res", res);
           set({ corporate: res.data, loading: false });
         } catch (err) {
           if (err instanceof Error) {
@@ -189,7 +202,9 @@ export const useCorporateStore = create<CorporateStore>()(
           }
         }
       },
-      createCorporate: async (data) => {
+/*************  ✨ Windsurf Command ⭐  *************/
+/*******  c3e60cef-3453-43b4-b65e-ebd7e766a4d9  *******/
+      createCorporateList: async (data) => {
         set({ loading: true, error: null });
         try {
           const res = await corporate.create(data);
@@ -206,7 +221,7 @@ export const useCorporateStore = create<CorporateStore>()(
           }
         }
       },
-      updateCorporate: async (id, data) => {
+      updateCorporateList: async (id, data) => {
         set({ loading: true, error: null });
         try {
           const res = await corporate.update(id, data);
@@ -225,7 +240,7 @@ export const useCorporateStore = create<CorporateStore>()(
           }
         }
       },
-      deleteCorporate: async (id) => {
+      deleteCorporateList: async (id) => {
         set({ loading: true, error: null });
         try {
           await corporate.remove(id);

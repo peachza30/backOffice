@@ -3,7 +3,7 @@ import React, { useEffect } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/app/[lang]/(backoffice)/(corporate)/_components/ui/card";
 
 import SizeButton from "../../_components/button/size-button";
-import CorporateView from "../../_components/corporate-tabs/corporate-tabs";
+import CorporateView from "../../_components/corporate-list-tabs/corporate-tabs";
 import { Button } from "../../_components/ui/button";
 import { useRouter } from "next/navigation";
 

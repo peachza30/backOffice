@@ -3,9 +3,9 @@ import React from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import SizeButton from "../_components/button/size-button";
 import { useCorporateStore } from "@/store/corporate/useCorporateStore";
-import CorporateRequestDataTable from "../_components/data-table/corporate-request-table";
+import CorporateRequestDataTable from "../_components/corporate-request-table/corporate-request-table";
 const CorporateList = () => {
-  const { metadata, fetchCorporates, loading, error, total } = useCorporateStore();
+  const { metadata } = useCorporateStore();
   return (
     <>
       <Card title="Corporate List">

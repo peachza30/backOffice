@@ -1,6 +1,6 @@
 
 // color type
-export type color = "primary" | "info" | "warning" | "success" | "destructive" | "secondary";
+export type color = "primary" | "info" | "warning" | "success" | "destructive" | "secondary" | "default";
 export type TextAreaColor = "primary" | "info" | "warning" | "success" | "destructive";
 export type InputColor = "primary" | "info" | "warning" | "success" | "destructive";
 
