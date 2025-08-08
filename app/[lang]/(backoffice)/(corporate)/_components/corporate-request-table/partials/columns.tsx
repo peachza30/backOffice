@@ -36,7 +36,7 @@ export const corporateRequestColumns: ColumnDef<CorporateRequest>[] = [
     cell: ({ row }) => <div className="whitespace-nowrap font-medium">{row.getValue("no")}</div>,
   },
   {
-    accessorKey: "requestType", // Fixed: use actual property name
+    accessorKey: "requestFormDescription", // Fixed: use actual property name
     header: ({ column }) => {
       return (
         <div className="flex items-center space-x-2">
@@ -44,7 +44,7 @@ export const corporateRequestColumns: ColumnDef<CorporateRequest>[] = [
         </div>
       );
     },
-    cell: ({ row }) => <div className="whitespace-nowrap font-medium">{row.getValue("requestType")}</div>,
+    cell: ({ row }) => <div className="whitespace-nowrap font-medium">{row.getValue("requestFormDescription")}</div>,
   },
   {
     accessorKey: "registrationNo", // Fixed: use actual property name

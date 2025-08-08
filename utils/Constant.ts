@@ -27,8 +27,6 @@ export function formatCurrency(
   }).format(num);
 }
 
-
-
 export function toBuddhistDate(iso: string): string {
   const d = new Date(iso);
   const day = String(d.getDate()).padStart(2, "0");
@@ -109,3 +107,5 @@ export const syncParentPermissions = (items: PermissionItem[]): PermissionItem[]
     return item;
   });
 };
+
+

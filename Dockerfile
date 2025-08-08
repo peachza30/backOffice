@@ -9,13 +9,14 @@ RUN apk add --no-cache tzdata \
 # Set timezone environment variable
 ENV TZ=Asia/Bangkok
 
-COPY package.json package-lock.json ./
+COPY package.json pnpm-lock.yaml* ./
 RUN npm install -g pnpm
 RUN pnpm install
 
 COPY . .
-COPY .env .env.development
+COPY .env.development .env
 
+RUN ls -al
 RUN pnpm run build
 
 FROM node:20-alpine AS runner

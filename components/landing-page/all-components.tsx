@@ -1,15 +1,15 @@
 "use client"
 import { Button } from "@/components/ui/button"
-import { menusConfig } from "@/config/menus";
+// import { menusConfig } from "@/config/menus";
 import Link from "next/link";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay } from 'swiper/modules';
 const AllComponents = () => {
 
 
-  const menus = menusConfig.sidebarNav.modern[2]?.child?.[0]?.nested ?? [];
-  const menus2 = menusConfig.sidebarNav.modern[2]?.child?.[1]?.nested ?? [];
-  const data = [...menus, ...menus2];
+  // const menus = menusConfig.sidebarNav.modern[2]?.child?.[0]?.nested ?? [];
+  // const menus2 = menusConfig.sidebarNav.modern[2]?.child?.[1]?.nested ?? [];
+  // const data = [...menus, ...menus2];
   return (
     <section className="py-16 2xl:py-20  relative " id="features">
       <div className="max-w-[670px] mx-auto">
@@ -37,7 +37,7 @@ const AllComponents = () => {
 
 
         >
-          {data.map((item, index) => (
+          {/* {data.map((item, index) => (
             <SwiperSlide
               key={`menu-${index}`}
               className="w-28 flex justify-center "
@@ -50,7 +50,7 @@ const AllComponents = () => {
               </Button>
             </SwiperSlide>
           ))
-          }
+          } */}
         </Swiper>
 
         <Swiper
@@ -70,7 +70,7 @@ const AllComponents = () => {
 
 
         >
-          {data.map((item, index) => (
+          {/* {data.map((item, index) => (
             <SwiperSlide
               key={`menu-${index}`}
               className="w-28 flex justify-center "
@@ -83,7 +83,7 @@ const AllComponents = () => {
               </Button>
             </SwiperSlide>
           ))
-          }
+          } */}
         </Swiper>
       </div>
     </section >

@@ -1,56 +1,68 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "./dialog";
 import { Icon } from "@iconify/react";
 import { Button } from "../ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DetailItem, DetailsGroup, data } from "./data";
+import { Card, CardContent, CardHeader, CardTitle } from "./card";
+import { data } from "./data";
+import { useCorporateStore } from "@/store/corporate/useCorporateStore";
+
 interface RequestEditDialogProps {
   open: boolean;
   onClose?: () => void;
-  details: any[]; // 🟢 typed!
-  initialIndex: number | null;
 }
 
-const RequestEditDialog: React.FC<RequestEditDialogProps> = ({ open, onClose, details = data }) => {
+const RequestEditDialog: React.FC<RequestEditDialogProps> = ({ open, onClose }) => {
+  const { request, editList, loading, fetctRequestEditList } = useCorporateStore();
+  const details = request?.edit_list || [];
+
+  useEffect(() => {
+    if (request) {
+      fetctRequestEditList();
+    }
+  }, [request, fetctRequestEditList]);
+  useEffect(() => {
+    if (!loading) console.log("editList", editList);
+  }, []);
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent size="full" className="w-full max-w-7xl h-[85vh] flex flex-col gap-3 pl-14 pr-14 overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl text-center">รายละเอียดคำขอเปลี่ยนแปลงข้อมูลนิติบุคคล</DialogTitle>
         </DialogHeader>
+
         <div className="flex-1 overflow-y-auto mt-3 space-y-3">
-          {data.length === 0 ? (
+          {!editList ? (
             <p className="text-center text-sm text-muted-foreground">— ไม่พบข้อมูล —</p>
           ) : (
-            data.flatMap((group, groupIdx) =>
-              Object.entries(group as DetailsGroup).map(([section, raw]) => {
-                const items = raw as DetailItem[];
-                return (
-                  <Card key={`${section}-${groupIdx}`}>
-                    <CardHeader className="bg-blue-50/40">
-                      <CardTitle className="text-lg font-semibold">
-                        <div className="flex items-center">
-                          <Icon icon="hugeicons:note-edit" className="w-6 h-6 mr-2" />
-                          {section === "corporate" ? "ข้อมูลนิติบุคคล" : section === "employee" ? "ข้อมูลบุคลากร" : "ที่อยู่"}
-                        </div>
-                      </CardTitle>
-                    </CardHeader>
+            editList.details.tabs.map((tab, idx) => (
+              <Card key={idx} className="bg-white hover:shadow-sm transition-shadow duration-300 border-2 border-blue-50">
+                <div key={tab.key}>
+                  <CardHeader className="bg-blue-50/40">
+                    <CardTitle className="text-lg font-semibold">
+                      <div className="flex items-center">
+                        <Icon icon="hugeicons:note-edit" className="w-6 h-6 mr-2" />
+                        {tab.title}
+                      </div>
+                    </CardTitle>
+                  </CardHeader>
 
+                  {tab.changes && tab.changes.length > 0 && (
                     <CardContent className="flex flex-col gap-2">
-                      {items.map(it => (
-                        <div key={it.id}>
-                          {it.id}. {it.name}
+                      {tab.changes.map(change => (
+                        <div key={change.id}>
+                          {change.id}. {change.name}
                         </div>
                       ))}
                     </CardContent>
-                  </Card>
-                );
-              })
-            )
+                  )}
+                </div>
+              </Card>
+            ))
           )}
         </div>
+
         <DialogFooter className="pt-7 flex justify-center">
           <Button variant="soft" onClick={onClose}>
             รับทราบ, ปิด

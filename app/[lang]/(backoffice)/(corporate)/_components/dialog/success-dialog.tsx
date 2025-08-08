@@ -24,8 +24,8 @@ const SuccessDialog = ({ open, onOpenChange, dialogConfig }: SuccessDialogProps)
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent size="lg" className="bg-white">
         <div className="justify-center first-letter:text-center flex flex-col items-center">
-          <p className="p-5 text-xl" style={{ color: dialogConfig.color }}>
-            <div className="justify-center first-letter:text-center flex flex-col items-center mb-5">{dialogConfig.icon && <Icon icon={dialogConfig.icon} width="125" height="125" style={{ color: dialogConfig.color }} />}</div>
+          <p className={`p-5 text-xl font-bold text-${dialogConfig.class ?? "default"}`}>
+            <div className={`text-${dialogConfig.class ?? "default"} justify-center first-letter:text-center flex flex-col items-center mb-5`}>{dialogConfig.icon && <Icon icon={dialogConfig.icon} width="125" height="125" style={{ color: dialogConfig.color }} />}</div>
             {dialogConfig.body}
           </p>
         </div>

@@ -1,12 +1,16 @@
 import DashBoardLayoutProvider from "@/provider/dashboard.layout.provider";
 import { getDictionary } from "@/app/dictionaries";
-import { cookies } from "next/headers";
-
-import { redirect } from "next/navigation";
+import TokenRefresher from "@/components/TokenRefresher";
 
 const layout = async ({ children, params: { lang } }: { children: React.ReactNode; params: { lang: any } }) => {
   const trans = await getDictionary(lang);
-  return <DashBoardLayoutProvider trans={trans}>{children}</DashBoardLayoutProvider>;
+
+  return (
+    <DashBoardLayoutProvider trans={trans}>
+      {<TokenRefresher />}
+      {children}
+    </DashBoardLayoutProvider>
+  );
   // <html lang={lang}>
   //   <bo suppressHydrationWarning>
   //     {" "}

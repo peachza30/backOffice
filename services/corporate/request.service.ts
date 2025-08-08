@@ -1,13 +1,17 @@
 import httpClient from '@/config/axios.corp';
 import nextApi from '@/config/nextApi';
+
 export const findAll = async (params: FetchParams) => {
   const query = new URLSearchParams({
-    search: params.search ?? '',
+    search: params.search?.trim() ?? '',
     page: String(params.page ?? ""),
     limit: String(params.limit ?? ""),
-    sort: params.sort ?? 'created_at',
-    order: params.order ?? 'ASC',
-    status: params.status ?? '',
+    sort: params.sort ?? 'createDate',
+    order: params.order ?? 'DESC',
+    requestStatus: params.requestStatus ?? '',
+    requestFormId: params.requestFormId ?? '',
+    startDate: params.startDate ?? '',
+    endDate: params.endDate ?? '',
   }).toString();
 
   // const response = await nextApi.get(`/api/request`);
@@ -17,6 +21,21 @@ export const findAll = async (params: FetchParams) => {
 export const findOne = async (id: number) => {
   // const response = await httpClient.get('/corporate/' + id);
   const response = await httpClient.get('/corporate/corporate-request/' + id);
+  return response.data;
+};
+export const findOneByCorporate = async (corporateId: number) => {
+  // const response = await httpClient.get('/corporate/' + id);
+  const response = await httpClient.get('/corporate/corporate-request-corporate-id/' + corporateId);
+  console.log("findOneByCorporate", response);
+  return response.data;
+};
+export const findDocs = async (id: number) => {
+  const response = await httpClient.get('/corporate/document-url/' + id);
+  // const response = await nextApi.get(`/api/request/${id}?cookie=${cookie}`);
+  return response.data;
+};
+export const findEdit = async () => {
+  const response = await nextApi.get(`/api/edit-list`);
   return response.data;
 };
 

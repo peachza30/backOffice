@@ -42,10 +42,14 @@ type MasterStore = {
 interface FetchParams {
   search?: string;
   status?: string;
+  requestStatus?: string;
   page?: any;
   limit?: any;
   sort?: any;
   order?: 'ASC' | 'DESC';
+  requestFormId?: string;
+  startDate?: string;
+  endDate?: string;
 }
 interface ApiMetadata {
   page: number;
@@ -60,6 +64,16 @@ interface ValidationErrors {
   partnerPassword?: string;
   role?: string;
 }
+
+type AddressCard = {
+  type: string;
+  title: string;
+  branchCode: string;
+  fullAddress: string;
+  phone: string;
+  fax: string;
+  email: string;
+};
 
 // type MenuPermissions = {
 //   canRead: boolean;

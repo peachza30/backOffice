@@ -12,40 +12,48 @@ import { useEffect, useState } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { corporateRequestColumns } from "./partials/columns";
 import { TablePagination } from "@/components/pagination/pagination";
+import { CorporateSkeleton } from "../corporate-skeleton/corporate-skeleton";
 
 export function CorporateRequestDataTable() {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
-  const { requests, requestForm, metadata, fetchCorporateRequests, fetchCorporateRequestForm } = useCorporateStore();
+  const { requests, requestForm, requestStatus, loading, metadata, fetchCorporateRequests, fetchCorporateRequestForm, fetchCorporateRequestStatus } = useCorporateStore();
   const [search, setSearch] = useState(""); // คำค้น
   const [statusVal, setStatusVal] = useState(""); // สถานะคำขอ
   const [requestTypeVal, setRequestTypeVal] = useState(""); // ประเภทคำขอ
   const [startDate, setStartDate] = useState(""); // วันที่เริ่มต้น (yyyy-mm-dd)
   const [endDate, setEndDate] = useState(""); // วันที่สิ้นสุด
-  const [loading, setLoading] = useState(false);
   const [fetchClear, setFetchClear] = useState(false);
 
   const statusOpts: { value: string; label: string }[] = [
     { value: "", label: "--- ทั้งหมด ---" },
-    { value: "1", label: "คงอยู่" },
-    { value: "2", label: "ขาดต่อ" },
-    { value: "3", label: "ยกเลิก" },
-  ] as const;
-
+    ...requestStatus
+      .filter(item => item.active === 1)
+      .map(item => ({
+        value: String(item.id),
+        label: item.description,
+      })),
+  ];
+  
   const requestTypeOptions: { value: string; label: string }[] = [
-    { value: "", label: "--- All ---" },
-    ...requestForm.map(item => ({
-      value: String(item.id),
-      label: item.description,
-    })),
+    { value: "", label: "--- ทั้งหมด ---" },
+    ...requestForm
+      .filter(item => item.active === 1)
+      .map(item => ({
+        value: String(item.id),
+        label: item.description,
+      })),
   ];
 
   /* ── Data filters functions ────────────────────────────────────── */
   const handleClear = () => {
     setSearch("");
     setStatusVal("");
+    setRequestTypeVal("");
+    setStartDate("");
+    setEndDate("");
     setFetchClear(true);
   };
 
@@ -54,11 +62,14 @@ export function CorporateRequestDataTable() {
     const sortObj = sorting[0] || { id: "created_at", desc: false };
     return {
       search: search || "",
-      status: statusVal || "",
+      requestStatus: statusVal || "",
       page,
       limit,
       sort: sortObj.id,
       order: sortObj.desc ? "DESC" : "ASC",
+      requestFormId: requestTypeVal,
+      startDate: startDate || "",
+      endDate: endDate || "",
     } as const;
   };
 
@@ -70,6 +81,7 @@ export function CorporateRequestDataTable() {
   useEffect(() => {
     fetchData(0); // initial load
     fetchCorporateRequestForm();
+    fetchCorporateRequestStatus();
   }, []);
 
   useEffect(() => {
@@ -101,6 +113,9 @@ export function CorporateRequestDataTable() {
       },
     },
   });
+
+  console.log("requests", requests);
+
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-5 text-sm text-default-900">
@@ -113,9 +128,9 @@ export function CorporateRequestDataTable() {
                 <SelectValue placeholder="ทั้งหมด" />
               </SelectTrigger>
               <SelectContent>
-                {requestForm.map(opt => (
-                  <SelectItem key={opt.id} value={opt.id}>
-                    {opt.description}
+                {requestTypeOptions.map(opt => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
                   </SelectItem>
                 ))}
               </SelectContent>

@@ -3,7 +3,7 @@ import httpClient from '@/config/axios.auth';
 export const findAll = async (params: FetchRoleParams) => {
   console.log("params", params);
   const query = new URLSearchParams({
-    search: params.search ?? '',
+    search: params.search?.trim() ?? '',
     page: String(params.page ?? 1),
     limit: String(params.limit ?? 10),
     sort: params.sort ?? 'created_at',

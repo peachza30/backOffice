@@ -1,8 +1,8 @@
 "use client";
+import { useEffect } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../ui/table";
-
-import { Icon } from "@iconify/react";
-import { Button } from "../../ui/button";
+import { useCorporateStore } from "@/store/corporate/useCorporateStore";
+import TableSkeleton from "@/components/skeleton/table-skeleton";
 const TransactionHistory = () => {
   const columns = [
     { key: 1, label: "ลำดับ" },
@@ -13,6 +13,7 @@ const TransactionHistory = () => {
     { key: 6, label: "วันที่ยื่นคำขอ" },
     { key: 7, label: "วันที่ออกใบเสร็จ" },
   ];
+  
   const data = [
     {
       id: 1,
@@ -42,6 +43,20 @@ const TransactionHistory = () => {
       status: "12/11/2567",
     },
   ];
+
+  const { corporate, requests, loading, fetchCorporateRequestByCorporate } = useCorporateStore();
+  
+  useEffect(() => {
+    if (corporate) {
+      fetchCorporateRequestByCorporate(Number(corporate.registrationNo));
+    }
+  }, []);
+  console.log("corporate", corporate);
+
+  if (loading) {
+    return <TableSkeleton rows={5} />;
+  }
+
   return (
     <Table className="w-full table-auto">
       <TableHeader className="bg-blue-50/50">

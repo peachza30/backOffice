@@ -1,7 +1,8 @@
 "use client";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../ui/table";
 
-const GuaranteesDetails = (rows: CorporateList) => {
+const GuaranteesDetails = corporate => {
+  const CorporateGuarantee = corporate.corporate;
   return (
     <Table className="w-full table-auto">
       <TableHeader>
@@ -16,24 +17,24 @@ const GuaranteesDetails = (rows: CorporateList) => {
       <TableBody>
         <TableRow className="even:bg-blue-50/50">
           <TableCell>บริษัทจดทะเบียน</TableCell>
-          <TableCell>10</TableCell>
-          <TableCell>10,000.00</TableCell>
-          <TableCell>10</TableCell>
-          <TableCell>10,000.00</TableCell>
+          <TableCell>{CorporateGuarantee.accountingCustomerAmount}</TableCell>
+          <TableCell>{CorporateGuarantee.accountingCustomerIncome}</TableCell>
+          <TableCell>{CorporateGuarantee.accountingCustomerNoneAmount}</TableCell>
+          <TableCell>{CorporateGuarantee.accountingCustomerNoneIncome}</TableCell>
         </TableRow>
         <TableRow className="even:bg-blue-50/50">
           <TableCell>บริษัทไม่จดทะเบียน</TableCell>
-          <TableCell>20</TableCell>
-          <TableCell>30,000.00</TableCell>
-          <TableCell>20</TableCell>
-          <TableCell>20,000.00</TableCell>
+          <TableCell>{CorporateGuarantee.auditoringCustomerAmount}</TableCell>
+          <TableCell>{CorporateGuarantee.auditoringCustomerIncome}</TableCell>
+          <TableCell>{CorporateGuarantee.auditoringCustomerNoneAmount}</TableCell>
+          <TableCell>{CorporateGuarantee.auditoringCustomerNoneIncome}</TableCell>
         </TableRow>
         <TableRow className="even:bg-blue-50/50 ">
           <TableCell className="font-bold">รวม</TableCell>
-          <TableCell className="font-bold">30</TableCell>
-          <TableCell className="font-bold">40,000.00</TableCell>
-          <TableCell className="font-bold">30</TableCell>
-          <TableCell className="font-bold">40,000.00</TableCell>
+          <TableCell className="font-bold">{CorporateGuarantee.totalAccountingAmount}</TableCell>
+          <TableCell className="font-bold">{CorporateGuarantee.totalAccountingIncome}</TableCell>
+          <TableCell className="font-bold">{CorporateGuarantee.totalAuditingAmount}</TableCell>
+          <TableCell className="font-bold">{CorporateGuarantee.totalAuditingIncome}</TableCell>
         </TableRow>
       </TableBody>
     </Table>

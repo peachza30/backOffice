@@ -19,6 +19,7 @@ export async function GET(request: NextRequest) {
   }
 
   const newToken = await refreshToken(token);
+  
   if (!newToken) {
     return NextResponse.redirect(new URL('/login', request.url));
   }

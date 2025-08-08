@@ -20,25 +20,78 @@ export interface DetailsGroup {
    address: DetailItem[];
 }
 
-export const data: DetailsGroup[] = [
-   {
-      corporate: [
-         { id: 1, name: "แปรสภาพนิติบุคคล" },
-         { id: 2, name: "ชื่อนิติบุคคล" },
-         { id: 3, name: "ประเภทงานให้บริการ" },
-         { id: 4, name: "ทุนจดทะเบียน" },
-         { id: 5, name: "ขอให้ออกหนังสือรับรองใหม่" },
+export const data =
+{
+   "id": 510,
+   "corporateMemberRequestId": 108986,
+   "details": {
+      "tabs": [
+         {
+            "key": "information",
+            "title": "ข้อมูลนิติบุคคล",
+            "changes": [
+               {
+                  "name": "แปรสภาพนิติบุคคล"
+               },
+               {
+                  "name": "เปลี่ยนชื่อนิติบุคคล"
+               }
+            ]
+         },
+         {
+            "key": "address",
+            "title": "ที่อยู่",
+            "changes": [
+               {
+                  "name": "เปลี่ยนที่อยู่สำนักงาน"
+               },
+               {
+                  "name": "เพิ่มที่อยู่ติดต่อ"
+               }
+            ]
+         },
+         {
+            "key": "employees",
+            "title": "รายนาม/พนักงาน",
+            "changes": [
+               {
+                  "name": "เพิ่มกรรมการ"
+               },
+               {
+                  "name": "ลบกรรมการ"
+               }
+            ]
+         },
+         {
+            "key": "details",
+            "title": "รายละเอียดหลักประกัน",
+            "changes": [
+               {
+                  "name": "เปลี่ยนชื่อผู้ติดต่อ"
+               },
+               {
+                  "name": "เปลี่ยนเบอร์โทรศัพท์"
+               },
+               {
+                  "name": "เปลี่ยนอีเมล"
+               }
+            ]
+         },
+         {
+            "key": "documents",
+            "title": "เอกสารในการสมัคร",
+            "changes": [
+               {
+                  "name": "อัปโหลดเอกสาร"
+               },
+               {
+                  "name": "ลบเอกสาร"
+               }
+            ]
+         }
       ],
-      employee: [
-         { id: 1, name: "รายนามกรรมการ" },
-         { id: 2, name: "รายนามหัวหน้าสำนักงาน" },
-         { id: 3, name: "รายนามผู้ทำบัญชี" },
-         { id: 4, name: "รายนามผู้สอบบัญชี" },
-         { id: 5, name: "จำนวนพนักงาน" },
-      ],
-      address: [
-         { id: 1, name: "ที่อยู่" },
-         { id: 2, name: "ที่อยู่สาขา" },
-      ],
+      "editUser": "system",
+      "editDate": "2025-07-23T00:42:00.417Z"
    },
-];
+   "active": 1
+}

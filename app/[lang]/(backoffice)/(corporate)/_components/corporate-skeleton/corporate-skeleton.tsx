@@ -1,7 +1,7 @@
 import { Skeleton } from "../ui/skeleton";
 
 export const CorporateSkeleton = () => (
-  <div className="container mx-auto  space-y-6">
+  <div className="mx-auto  space-y-6">
     {/* card 2 -------------------------------------------------- */}
     <div className="bg-white border border-blue-100/75 rounded-lg p-6">
       <Skeleton className="w-48 h-5 mb-6" /> {/* title bar */}

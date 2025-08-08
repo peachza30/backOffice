@@ -4,6 +4,7 @@ import { subscribeWithSelector } from "zustand/middleware";
 import * as corporate from "@/services/corporate/corporate.service";
 import * as request from "@/services/corporate/request.service";
 import * as requestFormType from "@/services/corporate/requestForm.service";
+import * as requestStatus from "@/services/corporate/requestStatus.service";
 
 export const useCorporateStore = create<CorporateStore>()(
   persist(
@@ -13,21 +14,28 @@ export const useCorporateStore = create<CorporateStore>()(
       requests: [],
       request: null,
       requestForm: [],
+      requestStatus: [],
+      editList: null,
       corporateRequestById: null,
       metadata: null,
-      documents: [],
+      documents: null,
+      updated: null,
       loading: false,
       error: null,
       mode: null,
+      remark: null,
       total: 0,
 
+      /*--------------- Actions ---------------*/
       setMode: (mode) => set({ mode }),
+      setRemark: (remark) => set({ remark }),
 
+      /*--------------- Corporates-Requests ---------------*/
       fetchCorporateRequests: async (params) => {
+        // console.log("params", params);
         set({ loading: true, error: null });
         try {
           const res = await request.findAll(params);
-          console.log("res", res);
           set({ requests: res.data, metadata: res.metadata, loading: false });
         } catch (err) {
           if (err instanceof Error) {
@@ -50,11 +58,50 @@ export const useCorporateStore = create<CorporateStore>()(
           }
         }
       },
+      fetchCorporateRequestByCorporate: async (corporateId: number) => {
+        set({ loading: true, error: null });
+        try {
+          const res = await request.findOneByCorporate(corporateId);
+          set({ requests: res.data, metadata: res.metadata, loading: false });
+        } catch (err) {
+          if (err instanceof Error) {
+            set({ error: err.message, loading: false });
+          } else {
+            set({ error: "An unexpected error occurred", loading: false });
+          }
+        }
+      },
       fetchCorporateRequestForm: async () => {
         set({ loading: true, error: null });
         try {
           const res = await requestFormType.findAll();
           set({ requestForm: res.data, metadata: res.metadata, loading: false });
+        } catch (err) {
+          if (err instanceof Error) {
+            set({ error: err.message, loading: false });
+          } else {
+            set({ error: "An unexpected error occurred", loading: false });
+          }
+        }
+      },
+      fetchCorporateRequestStatus: async () => {
+        set({ loading: true, error: null });
+        try {
+          const res = await requestStatus.findAll();
+          set({ requestStatus: res.data, metadata: res.metadata, loading: false });
+        } catch (err) {
+          if (err instanceof Error) {
+            set({ error: err.message, loading: false });
+          } else {
+            set({ error: "An unexpected error occurred", loading: false });
+          }
+        }
+      },
+      fetctRequestEditList: async () => {
+        set({ loading: true, error: null });
+        try {
+          const res = await request.findEdit();
+          set({ editList: res, loading: false });
         } catch (err) {
           if (err instanceof Error) {
             set({ error: err.message, loading: false });
@@ -80,34 +127,27 @@ export const useCorporateStore = create<CorporateStore>()(
           }
         }
       },
-      updateCorporateRequest: async (id, data) => {
+      updateCorporateRequest: async (payload: CorporateUpdatePayload) => {
         set({ loading: true, error: null });
         try {
-          const res = await corporate.update(id, data);
-          set((state) => ({
-            corporates: state.corporates.map((corp) =>
-              corp.id === id ? res.data : corp
-            ),
-            corporate: res.data,
-            loading: false,
-          }));
+          const updated = await corporate.update(payload);
+          set({ updated: updated, loading: false });
         } catch (err) {
-          if (err instanceof Error) {
-            set({ error: err.message, loading: false });
-          } else {
-            set({ error: "An unexpected error occurred", loading: false });
-          }
+          set({
+            error: err instanceof Error ? err.message : "An unexpected error occurred",
+            loading: false,
+          });
         }
       },
       deleteCorporateRequest: async (id) => {
         set({ loading: true, error: null });
         try {
           await corporate.remove(id);
-          set((state) => ({
-            corporates: state.corporates.filter((corp) => corp.id !== id),
-            corporate: null,
-            loading: false,
-          }));
+          // set((state) => ({
+          //   corporates: state.corporates.filter((corp) => corp.id !== id),
+          //   corporate: null,
+          //   loading: false,
+          // }));
         } catch (err) {
           if (err instanceof Error) {
             set({ error: err.message, loading: false });
@@ -116,54 +156,11 @@ export const useCorporateStore = create<CorporateStore>()(
           }
         }
       },
-      fetchCorporateDocuments: async () => {
+      fetchCorporateDocuments: async (id) => {
         set({ loading: true, error: null });
         try {
-          const data = [
-            {
-              id: 1,
-              type: "หนังสือรับรองการจดทะเบียนนิติบุคคล ไม่เกิน 3 เดือน",
-              count: 10,
-              date: "2023-10-01",
-              fileId: "6600f271d2babd2cd8a77ece",
-            },
-            {
-              id: 2,
-              type: "สำเนาบัตรประจำตัวประชาชนของกรรมการ/หุ้นส่วนผู้จัดการผู้มีอำนาจลงนาม",
-              count: 5,
-              date: "2023-10-02",
-              fileId: "66b31f10fc70cdde2d64fc90",
-            },
-            {
-              id: 3,
-              type: "งบการเงินย้อนหลัง3ปี",
-              count: 3,
-              date: "2023-10-03",
-              fileId: "66b31f05fc70cdde2d64fc8c",
-            },
-            {
-              id: 4,
-              type: "ข้อมูลในงบกำไรขาดทุน หรือสำเนางบการเงิน ย้อนหลัง 1 ปี กรณีเป็นนิติบุคคลที่จดทะเบียนกับสภาวิชาชีพบัญชีครั้งแรก (ถ้ามี)",
-              count: 1,
-              date: "2023-05-11",
-              fileId: "6600f271d2babd2cd8a77ece",
-            },
-            {
-              id: 5,
-              type: "สำเนาหลักประกัน",
-              count: 2,
-              date: "2023-05-11",
-              fileId: "66b31f10fc70cdde2d64fc90",
-            },
-            {
-              id: 6,
-              type: "สำเนางบการเงินของปีก่อน (กรณีที่งบการเงินล่าสุดยังไม่ได้ตรวจสอบและแสดงความเห็น โดยผู้สอบบัญชี)",
-              count: 1,
-              date: "2023-05-11",
-              fileId: "6600f1b3d2babd2cd8a77e42",
-            },
-          ];
-          set({ documents: data, loading: false });
+          const res = await request.findDocs(id);
+          set({ documents: res, loading: false });
         } catch (err) {
           if (err instanceof Error) {
             set({ error: err.message, loading: false });
@@ -172,6 +169,8 @@ export const useCorporateStore = create<CorporateStore>()(
           }
         }
       },
+
+      /*--------------- Corporates-List ---------------*/
       fetchCorporatesList: async (params) => {
         set({ loading: true, error: null });
         try {
@@ -189,10 +188,6 @@ export const useCorporateStore = create<CorporateStore>()(
         set({ loading: true, error: null });
         try {
           const res = await corporate.findOne(id);
-          // const bId = res.data.businessTypeId;
-          // const type = await businessType.findOne(bId);
-          // console.log("type", type);
-
           set({ corporate: res.data, loading: false });
         } catch (err) {
           if (err instanceof Error) {
@@ -202,8 +197,6 @@ export const useCorporateStore = create<CorporateStore>()(
           }
         }
       },
-/*************  ✨ Windsurf Command ⭐  *************/
-/*******  c3e60cef-3453-43b4-b65e-ebd7e766a4d9  *******/
       createCorporateList: async (data) => {
         set({ loading: true, error: null });
         try {

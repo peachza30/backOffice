@@ -44,7 +44,7 @@ const nextConfig = {
       },
     ],
   },
-
+  reactStrictMode: false,
   output: "standalone", // ✅ move here
   typescript: {
     ignoreBuildErrors: true, // ✅ move here (but use with caution)

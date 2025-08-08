@@ -102,11 +102,9 @@ export async function middleware(request: NextRequest) {
   const cookieName = process.env.NEXT_PUBLIC_COOKIES_NAME || '';
   const cookie = request.cookies.get(cookieName);
   const token = cookie?.value || '';
-
-  console.log('Middleware - Path:', pathname, 'Has Token:', !!token);
-
   const locale = getLocaleFromPathname(pathname);
 
+  console.log('Middleware - Path:', pathname, 'Has Token:', !!token);
   // Handle missing locale - redirect to localized URL
   if (!locale) {
     const detectedLocale = getLocale(request);
@@ -128,7 +126,7 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(loginUrl);
     }
 
-    if (isProtectedPath(pathname, locale)) {
+    if (!isPublicPath(pathname, locale)) {
       const loginUrl = new URL(`/${locale}/login`, request.url);
       loginUrl.searchParams.set('returnUrl', pathname);
       return NextResponse.redirect(loginUrl);
@@ -139,14 +137,21 @@ export async function middleware(request: NextRequest) {
 
   // Token exists - check if it's expired and try to refresh
   let tokenStatus = getTokenStatus(token);
+  console.log("tokenStatus", tokenStatus);
   let isLoggedIn = tokenStatus === 'valid';
-  
+
   // If token is expired, try to refresh it
-  if (tokenStatus !== 'valid') {
-    console.log('Token expired, redirecting to /api/refresh-token');
+  if (tokenStatus === 'missing') {
+    console.log('Token missing, redirecting to /login');
     const refreshUrl = new URL(`/api/refresh-token`, request.url);
+    console.log("refreshUrl", refreshUrl);
     refreshUrl.searchParams.set('returnUrl', pathname);
     return NextResponse.redirect(refreshUrl);
+  }
+
+  if (tokenStatus === 'expired') {
+    console.log('Token expired, attempting to refresh...'); //refreshing token in layout.tsx
+    return NextResponse.next();
   }
 
   // If still not logged in after refresh attempt, redirect to login for protected paths
@@ -166,7 +171,6 @@ export async function middleware(request: NextRequest) {
     pathname === `/${locale}/forgot-password`
   )) {
     const dashboardUrl = new URL(`/${locale}/dashboard`, request.url);
-    console.log('Redirecting logged-in user to dashboard:', dashboardUrl.href);
     return NextResponse.redirect(dashboardUrl);
   }
 

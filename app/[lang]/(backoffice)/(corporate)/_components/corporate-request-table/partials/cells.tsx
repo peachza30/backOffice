@@ -77,31 +77,14 @@ export const ActionCell = ({ corporate }: { corporate: CorporateRequest }) => {
       <Button
         size="icon"
         onClick={() => {
-          setMode("view");
+          setMode(corporate.requestStatus === 1 ? "edit" : "view");
           router.push(`/corporate-request/${corporate.id}`);
         }}
-        color="info"
+        color={corporate.requestStatus === 1 ? "warning" : "info"}
         variant="soft"
       >
-        <Icon icon="fluent:eye-24-filled" width="24" height="24" />
+        <Icon icon={corporate.requestStatus === 1 ? "hugeicons:pencil-edit-01" : "fluent:eye-24-filled"} width="24" height="24" />
       </Button>
-
-      {corporate.requestStatus === 1 && (
-        <>
-          <p className="p-1 text-gray-300">|</p>
-          <Button
-            size="icon"
-            onClick={() => {
-              setMode("edit");
-              router.push(`/corporate-request/${corporate.id}`);
-            }}
-            color="warning"
-            variant="soft"
-          >
-            <Icon icon="hugeicons:pencil-edit-01" width="24" height="24" />
-          </Button>
-        </>
-      )}
     </div>
   );
 };

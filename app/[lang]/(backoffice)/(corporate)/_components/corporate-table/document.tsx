@@ -5,7 +5,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Icon } from "@iconify/react";
 import { Button } from "@/components/ui/button";
 import { useCorporateStore } from "@/store/corporate/useCorporateStore";
-import DocumentViewerDialog from "../../corporate-list-dialog/document-viewer-dialog";
+import DocumentViewerDialog from "../corporate-dialog/document-viewer-dialog";
+
+export interface CorporateDocument {
+  id: number;
+  type: string;
+  count: number;
+  date: string;
+  url: string;
+}
 
 const DocumentTable: React.FC = () => {
   const { documents, fetchCorporateDocuments } = useCorporateStore();

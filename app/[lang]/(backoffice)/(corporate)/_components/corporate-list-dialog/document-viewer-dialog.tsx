@@ -4,19 +4,22 @@ import React, { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./dialog";
 import { Icon } from "@iconify/react";
 import { Button } from "../ui/button";
+import { useCorporateStore } from "@/store/corporate/useCorporateStore";
 
 interface DocumentViewerDialogProps {
   open: boolean;
   onClose: () => void;
-  files: any[];
   initialIndex: number | null;
 }
 
 const NAV_BTN_WIDTH = "w-12"; // change here to enlarge / shrink click zone
 
-const DocumentViewerDialog: React.FC<DocumentViewerDialogProps> = ({ open, onClose, files, initialIndex }) => {
+const DocumentViewerDialog: React.FC<DocumentViewerDialogProps> = ({ open, onClose, initialIndex }) => {
+  const { corporate, documents, loading, fetchCorporateDocuments } = useCorporateStore();
   const [index, setIndex] = useState(initialIndex);
   const [src, setSrc] = useState("");
+  const [files, setFiles] = useState(corporate?.document || []);
+  const [url, setUrl] = useState("");
 
   // Reset page on new open / index change
   useEffect(() => {
@@ -24,36 +27,46 @@ const DocumentViewerDialog: React.FC<DocumentViewerDialogProps> = ({ open, onClo
   }, [open, initialIndex]);
 
   useEffect(() => {
-    if (index === null) return;
-    const id = files[index].fileId;
-    setSrc(`/api/biz/download?fileId=${encodeURIComponent(id)}&contentType=application/pdf&t=${Date.now()}`);
-  }, [index, files]);
+    if (index !== null && corporate && corporate.document && corporate.document.length > 0) {
+      fetchCorporateDocuments(corporate.document[index].fileId);
+      setFiles(corporate.document);
+    }
+  }, [index, corporate, fetchCorporateDocuments]);
+
+  useEffect(() => {
+    if (!loading && documents && documents.length > 0) {
+      setSrc(`/api/file/proxy?url=${documents.url}`);
+    }
+  }, [documents]);
 
   const goPrev = () => setIndex(i => (i === null ? 0 : Math.max(0, i - 1)));
-  const goNext = () => setIndex(i => (i === null ? 0 : Math.min(files.length - 1, i + 1)));
+  const goNext = () => setIndex(i => (i === null ? 0 : Math.min((corporate?.document?.length ?? 0) - 1, i + 1))); //Math.min(files.length - 1, i + 1))); //Math.min(corporate?.document.length - 1, i + 1)));
 
   const handleReload = async () => {
     if (index !== 0) {
       await setIndex(0);
     } else {
       await setIndex(null);
-      await setIndex(0);
+      await setIndex(index);
     }
   };
 
-  const handlePrint = () => {
+  const handlePrint = async () => {
     if (index === null) return;
-    const printWindow = window.open(files[index], "_blank");
+    const currentIndex = index !== null ? index : 0;
+    const currentFile = `/api/biz/download?fileId=${corporate?.document[currentIndex].fileId}&contentType=application/pdf&t=${Date.now()}`;
+    const printWindow = window.open(currentFile, "_blank");
     printWindow?.print();
   };
 
   const handleDownload = () => {
     // guard-check
     const currentIndex = index !== null ? index : 0;
-    if (!files[currentIndex]) return;
+    if (!documents.url) return;
+    const currentFile = `/api/biz/download?fileId=${corporate?.document[currentIndex].fileId}&contentType=application/pdf&t=${Date.now()}`;
     const link = document.createElement("a");
-    link.href = files[currentIndex]; // or files[currentIndex].url if your item is an object
-    link.download = `document_page_${currentIndex + 1}`; // back-ticks for template literal
+    link.href = currentFile; // or files[currentIndex].url if your item is an object
+    link.download = `document_${currentIndex + 1}_${Date.now()}`; // back-ticks for template literal
 
     // Firefox needs the element in the DOM
     document.body.appendChild(link);
@@ -62,13 +75,13 @@ const DocumentViewerDialog: React.FC<DocumentViewerDialogProps> = ({ open, onClo
   };
 
   const currentIndex = index ?? 0;
-  const currentFile = files[currentIndex];
+  const currentFile = corporate?.document[currentIndex];
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="w-full max-w-7xl h-[85vh] flex flex-col gap-3 pl-14 pr-pl-14" size="full">
         <DialogHeader>
-          <DialogTitle className="text-lg text-center">ประเภทเอกสาร : {currentFile?.type ?? "เอกสาร"}</DialogTitle>
+          <DialogTitle className="text-lg text-center">ประเภทเอกสาร : {currentFile?.documentName ?? "เอกสาร"}</DialogTitle>
         </DialogHeader>
 
         {/* Viewer */}
@@ -78,9 +91,15 @@ const DocumentViewerDialog: React.FC<DocumentViewerDialogProps> = ({ open, onClo
             <Icon icon="mdi:chevron-left" width={36} height={36} className="drop-shadow" style={{ color: "#2563EB" }} />
           </button>
           {/* iframe */}
-          {currentFile ? <iframe key={src} src={src} style={{ overflow: "hidden" }} className="w-full h-full border-none pl-12 pr-12 overflow-hidden " title={currentFile.type} /> : <p className="flex items-center justify-center h-full">ไม่พบไฟล์</p>}
+          {!loading ? (
+            <iframe key={src} src={src} style={{ overflow: "hidden" }} className="w-full h-full border-none pl-12 pr-12 overflow-hidden " title={currentFile && currentFile.documentName} />
+          ) : (
+            <div className="flex items-center justify-center h-full w-full align-baseline">
+              <Icon icon="eos-icons:loading" className="" width={80} height={80} style={{ color: "#2563EB" }}></Icon>
+            </div>
+          )}
           {/* Right click‑strip */}
-          <button aria-label="ถัดไป" onClick={goNext} disabled={index === files.length - 1} className={`absolute inset-y-0 right-0 ${NAV_BTN_WIDTH} flex items-center justify-center transition-opacity bg-blue-50 hover:bg-blue-200/50  disabled:opacity-0 cursor-pointer`}>
+          <button aria-label="ถัดไป" onClick={goNext} disabled={corporate?.document && index === corporate.document.length - 1} className={`absolute inset-y-0 right-0 ${NAV_BTN_WIDTH} flex items-center justify-center transition-opacity bg-blue-50 hover:bg-blue-200/50  disabled:opacity-0 cursor-pointer`}>
             <Icon icon="mdi:chevron-right" width={36} height={36} className="drop-shadow" style={{ color: "#2563EB" }} />
           </button>
         </div>

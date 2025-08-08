@@ -37,7 +37,7 @@ const StaffAuditList: React.FC<{ items: StaffSummaryItem[] }> = ({
           <TableCell className="whitespace-nowrap text-left">
             {count}
           </TableCell>
-          <TableCell className="whitespace-nowrap font-bold">ราย</TableCell>
+          <TableCell className="whitespace-nowrap font-bold w-full">ราย</TableCell>
         </TableRow>
       ))}
     </TableBody>
