@@ -51,7 +51,7 @@ const UserView = ({ userId }: { userId: number }) => {
       setShow(userById.status === "A");
       setStatus(userById.status);
       setModifiedBy(userName || "");
-      setLastModified(new Intl.DateTimeFormat("th-TH", { year: "numeric", month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false }).format(new Date(updatedAt)));
+      // setLastModified(new Intl.DateTimeFormat("th-TH", { year: "numeric", month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false }).format(new Date(updatedAt)));
     }
   }, [userById]);
   useEffect(() => {

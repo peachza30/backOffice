@@ -10,7 +10,7 @@ import RequestDialog from "../../_components/dialog/request-dialog";
 import SuccessDialog from "../../_components/dialog/success-dialog";
 
 const CorporatePage = ({ params }: { params: { id: number } }) => {
-  const { request, mode, remark, updated, loading, fetchCorporateRequest, updateCorporateRequest } = useCorporateStore();
+  const { request, mode, remark, updated, documentPayload, loading, fetchCorporateRequest, updateCorporateRequest } = useCorporateStore();
   const [open, setOpen] = useState(true);
   const router = useRouter();
   const [openModal, setOpenModal] = useState(false);
@@ -57,6 +57,7 @@ const CorporatePage = ({ params }: { params: { id: number } }) => {
           Remark: remark,
           DueDateForPayFee: "2025-03-12",
           E_Mail: request?.email || "",
+          ...documentPayload,
         });
       }
       setOpenSuccessModal(true);

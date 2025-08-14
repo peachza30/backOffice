@@ -25,10 +25,12 @@ export const useCorporateStore = create<CorporateStore>()(
       mode: null,
       remark: null,
       total: 0,
+      documentPayload: null,
 
       /*--------------- Actions ---------------*/
       setMode: (mode) => set({ mode }),
       setRemark: (remark) => set({ remark }),
+      setDocumentPayload: (payload) => set({ documentPayload: payload }),
 
       /*--------------- Corporates-Requests ---------------*/
       fetchCorporateRequests: async (params) => {
@@ -97,7 +99,7 @@ export const useCorporateStore = create<CorporateStore>()(
           }
         }
       },
-      fetctRequestEditList: async () => {
+      fetchRequestEditList: async () => {
         set({ loading: true, error: null });
         try {
           const res = await request.findEdit();
@@ -130,6 +132,7 @@ export const useCorporateStore = create<CorporateStore>()(
       updateCorporateRequest: async (payload: CorporateUpdatePayload) => {
         set({ loading: true, error: null });
         try {
+          console.log("payload", payload);
           const updated = await corporate.update(payload);
           set({ updated: updated, loading: false });
         } catch (err) {

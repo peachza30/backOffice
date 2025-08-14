@@ -395,7 +395,7 @@ interface CorporateRequestGuarantee {
   bondDueDate: string | null;
   amount: string;
   yearNumber: string;
-  guaranteeTypeId: number;
+  guaranteeTypeId: string;
   corporateMemberRequestId: number;
   corporateId: number;
 }
@@ -424,14 +424,16 @@ interface CorporateRequestPerson {
 /* ── Unknown / placeholder for future definition ─────────────────────── */
 
 interface CorporateRequestDocument {
-  id: number,
-  corporateMemberRequestId: number,
-  corporateId: number,
-  receivedDate: string,
   documentTypeId: number,
-  fileId: string,
   documentName: string,
-  urlFile: string
+  documents: {
+    id: number,
+    corporateId: number,
+    corporateMemberRequestId: number,
+    fileId: string,
+    receivedDate: string,
+    urlFile: string
+  }[]
 }
 
 interface CorporateRequest {
@@ -466,7 +468,7 @@ interface CorporateRequest {
   beginDatePrevious: string | null;
   expiredDatePrevious: string | null;
   createDate: string;
-  updateDate: string | null;
+  updateDate: string;
   requestDateTypeDate: string | null;
   objectiveRegistraionDate: string | null;
 
@@ -527,8 +529,7 @@ interface CorporateRequest {
 
   created_by: number | null;
   created_at: string; // ISO date string
-  updated_by: number | null;
-  updated_at: string; // ISO date string
+  updateUser: number | null;
   deleted_by: number | null;
   deleted_at: string | null; // ISO date string
 
@@ -549,6 +550,13 @@ interface CorporateDocumentView {
   hasValue: boolean;
   length: number;
 }
+interface CorporateDocumentPayload {
+  fileId: number;
+  remark: string;
+  status: number;
+  active: number;
+}
+
 interface CorporateRequestForm {
   id: number;
   name: string;
@@ -565,6 +573,14 @@ interface CorporateRequestStatus {
   description: string;
   active: number;
 }
+type CorporateDocumentItem = {
+  id: number;
+  corporateMemberRequestId: number;
+  corporateId: number;
+  receivedDate?: string;
+  fileId: string;
+  urlFile?: string; // อาจว่างได้
+};
 
 interface CorporateReport {
   id: string;
@@ -651,10 +667,12 @@ interface CorporateStore {
   remark: string | null;
   metadata: ApiMetadata | null;
   total: number;
+  documentPayload: CorporateDocumentPayload | null;
 
   // ##### Methods ####
   setMode: (mode: "create" | "edit" | "view") => void;
   setRemark: (remark: string) => void;
+  setDocumentPayload: (payload: CorporateDocumentPayload) => void;
 
   // Corporate-List
   fetchCorporatesList: (params?: FetchParams) => Promise<void>;
@@ -669,7 +687,7 @@ interface CorporateStore {
   fetchCorporateRequest: (id: number) => Promise<void>;
   fetchCorporateRequestForm: () => Promise<void>;
   fetchCorporateRequestStatus: () => Promise<void>;
-  fetctRequestEditList: () => Promise<void>;
+  fetchRequestEditList: () => Promise<void>;
   fetchCorporateRequestByCorporate: (corporateId: number) => Promise<void>;
   // createCorporateRequest: (data: CorporateRequest, params: FetchParams) => Promise<void>;
   updateCorporateRequest: (payload: CorporateUpdatePayload) => Promise<void>;

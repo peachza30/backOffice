@@ -33,7 +33,7 @@ export function CorporateRequestDataTable() {
       .filter(item => item.active === 1)
       .map(item => ({
         value: String(item.id),
-        label: item.description,
+        label: item.name,
       })),
   ];
   

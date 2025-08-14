@@ -16,6 +16,7 @@ import SuccessDialog from "../dialog/success-dialog";
 const UserForm = ({ mode, userId }: { mode: "create" | "edit"; userId: number }) => {
   const { userById, updateUser, fetchUserById } = useUserStore();
   const { roles, role, roleScope, fetchRolesScope, fetchRoles } = useRoleStore();
+  console.log("roleScope", roleScope);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");

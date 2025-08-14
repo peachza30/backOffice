@@ -1,6 +1,6 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
-import { ActionCell, LastModifiedCell } from "./cells";
+import { ActionCell, UpdatedCell } from "./cells";
 
 export const corporateRequestColumns: ColumnDef<CorporateRequest>[] = [
   // {
@@ -89,14 +89,32 @@ export const corporateRequestColumns: ColumnDef<CorporateRequest>[] = [
     accessorKey: "requestStatus", // Fixed: use actual property name
     header: () => <div className="text-center">สถานะ</div>,
     cell: ({ row }) => {
-      const status = row.getValue("requestStatus") as number;
+      const getBadgeColor = (statusName: string): any => {
+        switch (statusName) {
+          case "รอการดำเนินการ":
+          case "รอการตรวจสอบ":
+          case "รอการจ่ายเงิน":
+            return "warning"; // เดิมเป็น "primary" → เปลี่ยนเป็นสีที่รองรับ
+          case "ตรวจสอบไม่ผ่าน":
+            return "destructive";
+          case "อนุมัติ":
+            return "success";
+          case "ชำระเงินแล้ว":
+            return "info"; // หรือ "success" ตามดีไซน์
+          case "ยกเลิก":
+          case "ไม่มีสิทธิ์เข้ารับการทดสอบ":
+          case "รอการพิมพ์บัตร":
+          case "ข้อมูลยกเข้าระบบ":
+            return "secondary";
+          default:
+            return "default";
+        }
+      };
+      const data = row.original as CorporateRequest;
+      const status = data.requestStatus as number;
+      const requestStatusName = data.requestStatusName as string;
       const statusMap: Record<number, { label: string; color: "default" | "warning" | "destructive" | "secondary" | "info" | "success" }> = {
-        1: { label: "รอการตรวจสอบ", color: "warning" },
-        2: { label: "รอการชำระเงิน", color: "default" },
-        3: { label: "ตรวจสอบไม่ผ่าน", color: "destructive" },
-        4: { label: "ยกเลิก", color: "secondary" },
-        5: { label: "ชำระเงินแล้ว", color: "info" },
-        6: { label: "อนุมัติ", color: "success" },
+        [row.original.requestStatus]: { label: requestStatusName, color: getBadgeColor(requestStatusName) },
       };
       const { label, color } = statusMap[status] || { label: "ไม่ทราบสถานะ", color: "default" };
 
@@ -109,15 +127,15 @@ export const corporateRequestColumns: ColumnDef<CorporateRequest>[] = [
       );
     },
   },
-    {
-      accessorKey: "updated_at",
-      header: () => <div className="text-center">LAST MODIFIED</div>,
-      cell: ({ row }) => <LastModifiedCell corporate={row.original} />,
-    },
-    {
-      id: "action",
-      enableHiding: false,
-      header: () => <div className="text-center">ACTION</div>,
-      cell: ({ row }) => <ActionCell corporate={row.original} />,
-    },
+  {
+    accessorKey: "updated_at",
+    header: () => <div className="text-center">LAST MODIFIED</div>,
+    cell: ({ row }) => <UpdatedCell updateDate={row.original.updateDate} updateUser={row.original.updateUser} />,
+  },
+  {
+    id: "action",
+    enableHiding: false,
+    header: () => <div className="text-center">ACTION</div>,
+    cell: ({ row }) => <ActionCell corporate={row.original} />,
+  },
 ];
